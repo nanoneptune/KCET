@@ -728,15 +728,7 @@ app.post("/api/colleges", async (req, res) => {
       locationAddress: college.locationAddress || college.place || "",
       website: college.website || "",
       contactNumber: college.contactNumber || "",
-      images: Array.isArray(college.images) && college.images.length > 0
-        ? college.images
-        : [
-            "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
-            "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60",
-            "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60",
-            "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=60",
-            "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60"
-          ],
+      images: Array.isArray(college.images) ? college.images : [],
       rating: Number(college.rating || 4.2),
       details: college.details || "",
       courses: coursesList
@@ -818,11 +810,11 @@ app.post("/api/colleges/import", async (req, res) => {
         images: Array.isArray(c.images) && c.images.length > 0
           ? c.images
           : [
-              "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
-              "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60",
-              "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60",
-              "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=60",
-              "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60"
+              "",
+              "",
+              "",
+              "",
+              ""
             ],
         rating: Number(c.rating || 4.2),
         details: c.details || "",
@@ -1006,20 +998,20 @@ You MUST return exactly a JSON object matching this schema. Do not write any mar
     // Safety check on images
     if (!generated.images || !Array.isArray(generated.images) || generated.images.length === 0) {
       generated.images = [
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+        "",
+        "",
+        "",
+        "",
+        ""
       ];
     } else {
       // Ensure we have exactly 5 elements. If we have less, fill with high-quality academic pictures
       const placeholders = [
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+        "",
+        "",
+        "",
+        "",
+        ""
       ];
       while (generated.images.length < 5) {
         generated.images.push(placeholders[generated.images.length % placeholders.length]);
@@ -1046,11 +1038,11 @@ Make sure you return exactly a JSON object matching this format (no markdown for
   "website": "Realistic website URL e.g. https://[abbreviation-of-college].edu.in or similar",
   "locationAddress": "${name}, ${place}, India",
   "images": [
-    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-    "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-    "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+    "",
+    "",
+    "",
+    "",
+    ""
   ]
 }`;
         let responseText = await callGroq(promptTextFallback, true);
@@ -1082,11 +1074,11 @@ Make sure you return exactly a JSON object matching this format (no markdown for
       website: `https://${abbreviation || "college"}.edu.in`,
       locationAddress: `${name}, ${place}, India`,
       images: [
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     };
     return res.json({ success: true, data: generatedMock });
@@ -1299,11 +1291,11 @@ Ensure all courses are properly structured.
              contactNumber: "",
              details: "Imported via CSV",
              images: [
-               "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-               "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-               "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-               "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-               "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+               "",
+               "",
+               "",
+               "",
+               ""
              ]
            } as College);
            if (saveRes.supabaseError) {

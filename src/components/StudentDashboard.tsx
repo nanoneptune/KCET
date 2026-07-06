@@ -403,19 +403,13 @@ export default function StudentDashboard({
   const currentCollegeImages = useMemo(() => {
     if (!currentCollege) return [];
     const fallbacks = [
-      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=80"
+      "https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png"
     ];
     if (!currentCollege.images || !Array.isArray(currentCollege.images) || currentCollege.images.length === 0) {
       return fallbacks;
     }
     const filtered = currentCollege.images.filter(img => img && img.trim() !== "");
-    while (filtered.length < 5) {
-      filtered.push(fallbacks[filtered.length % fallbacks.length]);
-    }
+    if (filtered.length === 0) return fallbacks;
     return filtered.slice(0, 5);
   }, [currentCollege]);
 
@@ -710,9 +704,7 @@ export default function StudentDashboard({
                   processedColleges.map((college) => {
                     const probInfo = getProbabilityLabel(college.probability);
                     const fallbacks = [
-                      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=80"
+                      "https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png"
                     ];
                     const collegeImg = (college.images && Array.isArray(college.images) && college.images.filter(img => img && img.trim() !== "")[0]) || fallbacks[0];
 
@@ -1166,7 +1158,7 @@ export default function StudentDashboard({
                         setLoadingAi(true);
                         setShowAiModal(true);
                         try {
-                          const res = await fetch("/api/predict-cutoff", {
+                          const res = await fetch("/api/ai/predict", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({

@@ -227,11 +227,11 @@ export default function AdminPortal({
 
       // set image place holders (generating details can find actual matches)
       const genericPics = [
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+        "",
+        "",
+        "",
+        "",
+        ""
       ];
       setImage1(genericPics[0]);
       setImage2(genericPics[1]);
@@ -418,13 +418,7 @@ export default function AdminPortal({
 
     try {
       const activeImages = [image1, image2, image3, image4, image5].map(s => s.trim()).filter(Boolean);
-      const savedImages = activeImages.length > 0 ? activeImages : [
-        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
-      ];
+      const savedImages = activeImages;
 
       // Derive basic package and fees for backward compatibility / database column fallbacks
       const computedFees = Math.max(...coursesList.map(c => c.fees));
@@ -617,13 +611,7 @@ export default function AdminPortal({
             contactNumber: (idxContact >= 0) ? safeStr(row[idxContact]) : "",
             website: (idxWeb >= 0) ? safeStr(row[idxWeb]) : "",
             details: (idxDetails >= 0) ? safeStr(row[idxDetails]) : "",
-            images: parsedImages.length > 0 ? parsedImages : [
-              "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
-              "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-              "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
-              "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
-              "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
-            ],
+            images: parsedImages,
             courses: [
               {
                 courseName: importedCourse,
