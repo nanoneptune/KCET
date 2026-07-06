@@ -1547,6 +1547,10 @@ async function seedDatabase() {
 
 seedDatabase();
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 College Predictor Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 College Predictor Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
