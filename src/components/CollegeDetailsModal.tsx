@@ -40,7 +40,7 @@ export default function CollegeDetailsModal({
         <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center space-x-3.5">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-center justify-center p-1.5 shrink-0 shadow-xs overflow-hidden">
-              <img src="/src/education.png" alt="Logo" className="w-full h-full object-contain" />
+              <img src="https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h2 className="font-display font-extrabold text-base sm:text-lg text-gray-900 leading-tight">

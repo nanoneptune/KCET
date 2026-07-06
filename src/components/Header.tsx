@@ -66,7 +66,7 @@ export default function Header({
               className="flex items-center justify-center p-1 hover:opacity-95 transition-all active:scale-95 duration-200 cursor-pointer group"
             >
               <img 
-                src="/src/education.png" 
+                src="https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png" 
                 alt="Logo" 
                 className="h-10 w-10 object-contain transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
               />
