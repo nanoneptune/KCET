@@ -1,8 +1,7 @@
+import { GoogleGenAI, Type } from "@google/genai";
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
 import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
@@ -12,11 +11,9 @@ import { KARNATAKA_COLLEGES } from "./src/data/colleges.js";
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || "3000", 10);
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -37,7 +34,7 @@ try {
 }
 
 // Local File Store Fallback (Ensures 100% reliability if Supabase tables are not created yet)
-const DATA_STORE_PATH = path.join(process.cwd(), "data_store.json");
+const DATA_STORE_PATH = process.env.VERCEL ? path.join("/tmp", "data_store.json") : path.join(process.cwd(), "data_store.json");
 const DEFAULT_COLLEGES: College[] = KARNATAKA_COLLEGES;
 
 interface LocalStore {
@@ -607,7 +604,6 @@ app.get("/api/colleges", async (req, res) => {
   }
 });
 
-import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -1514,11 +1510,14 @@ NOTIFY pgrst, 'reload schema';
 
 // Vite Middleware Integration
 if (process.env.NODE_ENV !== "production") {
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: "spa"
-  });
-  app.use(vite.middlewares);
+  import("vite").then(({ createServer: createViteServer }) => {
+    createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa"
+    }).then(vite => {
+      app.use(vite.middlewares);
+    });
+  }).catch(err => console.error("Failed to load vite:", err));
 } else {
   if (!process.env.VERCEL) {
     const distPath = path.join(process.cwd(), "dist");
@@ -1547,7 +1546,9 @@ async function seedDatabase() {
   }
 }
 
-seedDatabase();
+if (process.env.NODE_ENV !== "production") {
+  seedDatabase();
+}
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, "0.0.0.0", () => {

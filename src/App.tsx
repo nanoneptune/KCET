@@ -60,7 +60,6 @@ export default function App() {
       setIsFallbackMode(data.isFallback ?? false);
     } catch (err: any) {
       console.error("Network error fetching colleges database:", err);
-      alert(`Backend connection error: ${err.message}\n\nIf you deployed this app (e.g. to Vercel/Netlify) or ran 'vite' locally, the Express backend is not running. Please use 'npm run dev' locally, or deploy to a platform that supports Node.js servers (like Render or Railway).`);
     } finally {
       setLoadingColleges(false);
     }
