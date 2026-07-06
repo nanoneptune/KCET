@@ -61,7 +61,13 @@ export default function AdminPortal({
 
   useEffect(() => {
     fetch("/api/admin/students?adminCode=831067")
-      .then(r => r.json())
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type");
+        if (!res.ok || !contentType || !contentType.includes("application/json")) {
+           throw new Error("Invalid response from server. Backend may not be running.");
+        }
+        return res.json();
+      })
       .then(d => {
         if (d.data) setStudents(d.data);
       })

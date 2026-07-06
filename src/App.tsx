@@ -48,15 +48,19 @@ export default function App() {
     setLoadingColleges(true);
     try {
       const res = await fetch("/api/colleges");
-      const data = await res.json();
-      if (res.ok) {
-        setColleges(data.colleges || []);
-        setIsFallbackMode(data.isFallback ?? false);
-      } else {
-        console.warn("Failed to load colleges:", data.error);
+      
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Server returned ${res.status}. Expected JSON, got: ${text.substring(0, 40)}... Make sure the Node backend is running (not just static frontend).`);
       }
-    } catch (err) {
+
+      const data = await res.json();
+      setColleges(data.colleges || []);
+      setIsFallbackMode(data.isFallback ?? false);
+    } catch (err: any) {
       console.error("Network error fetching colleges database:", err);
+      alert(`Backend connection error: ${err.message}\n\nIf you deployed this app (e.g. to Vercel/Netlify) or ran 'vite' locally, the Express backend is not running. Please use 'npm run dev' locally, or deploy to a platform that supports Node.js servers (like Render or Railway).`);
     } finally {
       setLoadingColleges(false);
     }
