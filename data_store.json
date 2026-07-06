@@ -1,0 +1,3001 @@
+{
+  "colleges": [
+    {
+      "id": "college-1",
+      "name": "RV College of Engineering (UPDATED)",
+      "place": "Updated Place",
+      "locationAddress": "RV Vidyanikethan Post, Mysore Road, Bengaluru, Karnataka 560059",
+      "website": "https://rvce.edu.in",
+      "contactNumber": "080-68188100",
+      "images": [
+        "https://rvce.edu.in/sites/default/files/styles/slider_image/public/slide1_0.jpg",
+        "https://rvce.edu.in/sites/default/files/styles/slider_image/public/slide3.jpg",
+        "https://rvce.edu.in/sites/default/files/styles/slider_image/public/slide4_0.jpg",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.8,
+      "details": "Established in 1963, RVCE is one of the earliest self-financing engineering colleges in the country. It is highly regarded for its excellent academic standard, rich culture, and stellar placement records in Karnataka.",
+      "courses": [
+        {
+          "fees": 99,
+          "courseName": "Only This Course",
+          "cutoffRank": 99,
+          "averagePackage": 99,
+          "highestPackage": 99,
+          "cutoffRankPreviousYear": 99
+        }
+      ]
+    },
+    {
+      "id": "college-2",
+      "name": "PES University (PESU)",
+      "place": "Bangalore, Karnataka",
+      "locationAddress": "100 Feet Ring Road, BSK III Stage, Bengaluru, Karnataka 560085",
+      "website": "https://pes.edu",
+      "contactNumber": "080-10297297",
+      "images": [
+        "https://pes.edu/wp-content/uploads/2019/08/campus-banner.jpg",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.6,
+      "details": "PES University is a prominent private university offering diverse courses in Engineering, Management, and Law. PESU is well known for its research-oriented approach and high-paying tech placements.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "averagePackage": 13.5,
+          "highestPackage": 50,
+          "fees": 410000,
+          "cutoffRank": 1540,
+          "cutoffRankPreviousYear": 1620
+        },
+        {
+          "courseName": "Information Science Engineering",
+          "averagePackage": 11.2,
+          "highestPackage": 40,
+          "fees": 410000,
+          "cutoffRank": 2300,
+          "cutoffRankPreviousYear": 2450
+        },
+        {
+          "courseName": "Electronics & Communication Engineering",
+          "averagePackage": 9.5,
+          "highestPackage": 32,
+          "fees": 380000,
+          "cutoffRank": 3450,
+          "cutoffRankPreviousYear": 3600
+        }
+      ]
+    },
+    {
+      "id": "college-3",
+      "name": "BMS College of Engineering (BMSCE)",
+      "place": "Bangalore, Karnataka",
+      "locationAddress": "Bull Temple Road, Basavanagudi, Bengaluru, Karnataka 560019",
+      "website": "https://bmsce.ac.in",
+      "contactNumber": "080-26622130",
+      "images": [
+        "https://bmsce.ac.in/assets/images/BMS_Logo.png",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.5,
+      "details": "BMSCE is one of India's oldest private engineering schools, founded in 1946. Located in the heart of Bangalore, it hosts a vibrant campus with rich cultural and technical events, offering world-class labs.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "averagePackage": 11.8,
+          "highestPackage": 48,
+          "fees": 220000,
+          "cutoffRank": 1850,
+          "cutoffRankPreviousYear": 1920
+        },
+        {
+          "courseName": "Information Science Engineering",
+          "averagePackage": 10,
+          "highestPackage": 35,
+          "fees": 220000,
+          "cutoffRank": 2800,
+          "cutoffRankPreviousYear": 2980
+        }
+      ]
+    },
+    {
+      "id": "college-4",
+      "name": "M. S. Ramaiah Institute of Technology (MSRIT)",
+      "place": "Bangalore, Karnataka",
+      "locationAddress": "MSR Nagar, MSRIT Post, Bengaluru, Karnataka 560054",
+      "website": "https://msrit.edu",
+      "contactNumber": "080-23600822",
+      "images": [
+        "https://msrit.edu/images/logo.png",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.4,
+      "details": "MSRIT is an autonomous private engineering college affiliated with VTU. Renowned for its state-of-the-art infrastructure, massive laboratory facilities, and top-tier industrial collaborations.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "averagePackage": 11.5,
+          "highestPackage": 50,
+          "fees": 240000,
+          "cutoffRank": 1980,
+          "cutoffRankPreviousYear": 2150
+        },
+        {
+          "courseName": "Electronics & Communication Engineering",
+          "averagePackage": 9.8,
+          "highestPackage": 36,
+          "fees": 240000,
+          "cutoffRank": 3850,
+          "cutoffRankPreviousYear": 4100
+        }
+      ]
+    },
+    {
+      "id": "college-5",
+      "name": "Siddaganga Institute of Technology (SIT)",
+      "place": "Tumkur, Karnataka",
+      "locationAddress": "SIT Campus, Bangalore-Honnavar Road, Tumakuru, Karnataka 572103",
+      "website": "https://sit.ac.in",
+      "contactNumber": "081-62282696",
+      "images": [
+        "https://sit.ac.in/html/images/logo123.png",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.2,
+      "details": "SIT is one of the premier technological institutes in Tumkur, Karnataka, offering affordable engineering education with exceptional placements, high discipline, and great sports facilities.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "averagePackage": 7.8,
+          "highestPackage": 31.5,
+          "fees": 110000,
+          "cutoffRank": 5400,
+          "cutoffRankPreviousYear": 5800
+        },
+        {
+          "courseName": "Mechanical Engineering",
+          "averagePackage": 5.5,
+          "highestPackage": 18,
+          "fees": 110000,
+          "cutoffRank": 14500,
+          "cutoffRankPreviousYear": 16000
+        }
+      ]
+    },
+    {
+      "id": "clg_1783014612033",
+      "name": "Atria Institute of Technology",
+      "place": "Bangalore, Karnataka",
+      "locationAddress": "ASKB Campus, 1st Main Rd, Ags Colony, Anandnagar, Hebbal, Bengaluru, Karnataka 560024",
+      "website": "https://atria.edu",
+      "contactNumber": "080-23547272",
+      "images": [
+        "https://atria.edu/images/atria-logo.png",
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800&auto=format&fit=crop&q=60"
+      ],
+      "rating": 4.2,
+      "details": "Atria Institute of Technology in Bengaluru offers a vibrant campus life with state-of-the-art facilities, fostering a culture of innovation and academic excellence. The campus is surrounded by lush greenery.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "averagePackage": 7.5,
+          "highestPackage": 45,
+          "fees": 250000,
+          "cutoffRank": 9400,
+          "cutoffRankPreviousYear": 10500
+        }
+      ]
+    },
+    {
+      "id": "clg_csv_1783312204085_891",
+      "name": "E009",
+      "place": "PESU-RR",
+      "locationAddress": "E009, PESU-RR",
+      "courses": [
+        {
+          "courseName": "PES University (Ring Road Campus)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312204434_251",
+      "name": "E005",
+      "place": "RVCE",
+      "locationAddress": "E005, RVCE",
+      "courses": [
+        {
+          "courseName": "RV College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312204729_323",
+      "name": "E010",
+      "place": "PESU-EC",
+      "locationAddress": "E010, PESU-EC",
+      "courses": [
+        {
+          "courseName": "PES University (EC Campus)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205025_96",
+      "name": "E003",
+      "place": "BMSCE",
+      "locationAddress": "E003, BMSCE",
+      "courses": [
+        {
+          "courseName": "BMS College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205296_682",
+      "name": "E057",
+      "place": "JSS STU",
+      "locationAddress": "E057, JSS STU",
+      "courses": [
+        {
+          "courseName": "JSS Science and Technology University",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205575_475",
+      "name": "E006",
+      "place": "MSRIT",
+      "locationAddress": "E006, MSRIT",
+      "courses": [
+        {
+          "courseName": "MS Ramaiah Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205698_764",
+      "name": "E001",
+      "place": "UVCE",
+      "locationAddress": "E001, UVCE",
+      "courses": [
+        {
+          "courseName": "University Visvesvaraya College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205807_820",
+      "name": "E097",
+      "place": "CMRIT",
+      "locationAddress": "E097, CMRIT",
+      "courses": [
+        {
+          "courseName": "CMR Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312205934_837",
+      "name": "E002",
+      "place": "SKSJTI",
+      "locationAddress": "E002, SKSJTI",
+      "courses": [
+        {
+          "courseName": "SKSJT Institute of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206057_924",
+      "name": "E118",
+      "place": "RNSIT",
+      "locationAddress": "E118, RNSIT",
+      "courses": [
+        {
+          "courseName": "RNS Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206183_383",
+      "name": "E019",
+      "place": "NMIT",
+      "locationAddress": "E019, NMIT",
+      "courses": [
+        {
+          "courseName": "Nitte Meenakshi Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206298_104",
+      "name": "E012",
+      "place": "NHCE",
+      "locationAddress": "E012, NHCE",
+      "courses": [
+        {
+          "courseName": "New Horizon College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206405_751",
+      "name": "E082",
+      "place": "RUAS",
+      "locationAddress": "E082, RUAS",
+      "courses": [
+        {
+          "courseName": "Ramaiah University of Applied Sciences",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206518_535",
+      "name": "E007",
+      "place": "DSCE",
+      "locationAddress": "E007, DSCE",
+      "courses": [
+        {
+          "courseName": "Dayananda Sagar College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206625_708",
+      "name": "E079",
+      "place": "AIT Bangalore",
+      "locationAddress": "E079, AIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Acharya Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206727_149",
+      "name": "E080",
+      "place": "Alliance",
+      "locationAddress": "E080, Alliance",
+      "courses": [
+        {
+          "courseName": "Alliance College of Engineering and Design",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206834_300",
+      "name": "E082J",
+      "place": "JSSATE Bangalore",
+      "locationAddress": "E082J, JSSATE Bangalore",
+      "courses": [
+        {
+          "courseName": "JSS Academy of Technical Education",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312206965_79",
+      "name": "E096",
+      "place": "BNMIT",
+      "locationAddress": "E096, BNMIT",
+      "courses": [
+        {
+          "courseName": "BNMIT",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312207074_210",
+      "name": "E020",
+      "place": "Sir MVIT",
+      "locationAddress": "E020, Sir MVIT",
+      "courses": [
+        {
+          "courseName": "Sir M. Visvesvaraya Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312207526_837",
+      "name": "E008",
+      "place": "BIT Bangalore",
+      "locationAddress": "E008, BIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Bangalore Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312207681_295",
+      "name": "E013",
+      "place": "BIT VV Puram",
+      "locationAddress": "E013, BIT VV Puram",
+      "courses": [
+        {
+          "courseName": "Bangalore Institute of Technology (VV Puram)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312207820_690",
+      "name": "E036",
+      "place": "KLE Tech",
+      "locationAddress": "E036, KLE Tech",
+      "courses": [
+        {
+          "courseName": "KLE Technological University",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312207943_672",
+      "name": "E056",
+      "place": "NIE South Mysore",
+      "locationAddress": "E056, NIE South Mysore",
+      "courses": [
+        {
+          "courseName": "The National Institute of Engineering (South Campus)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208049_591",
+      "name": "E081",
+      "place": "AIT Soladevanahalli",
+      "locationAddress": "E081, AIT Soladevanahalli",
+      "courses": [
+        {
+          "courseName": "Acharya Institute of Technology (Soladevanahalli)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208154_975",
+      "name": "E143",
+      "place": "Jain SET",
+      "locationAddress": "E143, Jain SET",
+      "courses": [
+        {
+          "courseName": "Jain University School of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208263_857",
+      "name": "E152",
+      "place": "RVITM",
+      "locationAddress": "E152, RVITM",
+      "courses": [
+        {
+          "courseName": "R V Institute of Technology and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208372_123",
+      "name": "E004",
+      "place": "Dr. AIT",
+      "locationAddress": "E004, Dr. AIT",
+      "courses": [
+        {
+          "courseName": "Dr. Ambedkar Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208473_696",
+      "name": "E011",
+      "place": "MVJCE",
+      "locationAddress": "E011, MVJCE",
+      "courses": [
+        {
+          "courseName": "MVJ College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208573_372",
+      "name": "E075",
+      "place": "Presidency",
+      "locationAddress": "E075, Presidency",
+      "courses": [
+        {
+          "courseName": "Presidency University (School of Engineering)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208677_472",
+      "name": "E014R",
+      "place": "REVA",
+      "locationAddress": "E014R, REVA",
+      "courses": [
+        {
+          "courseName": "Reva University",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208782_107",
+      "name": "E047",
+      "place": "MCE Hassan",
+      "locationAddress": "E047, MCE Hassan",
+      "courses": [
+        {
+          "courseName": "Malnad College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208887_53",
+      "name": "E058",
+      "place": "PESCE Mandya Auto",
+      "locationAddress": "E058, PESCE Mandya Auto",
+      "courses": [
+        {
+          "courseName": "P E S College of Engineering (Mandya Autonomous)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312208999_625",
+      "name": "E061",
+      "place": "BIET Davangere",
+      "locationAddress": "E061, BIET Davangere",
+      "courses": [
+        {
+          "courseName": "Bapuji Institute of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209104_227",
+      "name": "E045",
+      "place": "RYMEC Ballari",
+      "locationAddress": "E045, RYMEC Ballari",
+      "courses": [
+        {
+          "courseName": "Rao Bahadur Y Mahabaleswarappa Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209208_716",
+      "name": "E041",
+      "place": "PDACE Kalaburagi",
+      "locationAddress": "E041, PDACE Kalaburagi",
+      "courses": [
+        {
+          "courseName": "P D A College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209314_820",
+      "name": "E034",
+      "place": "SDMCET Dharwad",
+      "locationAddress": "E034, SDMCET Dharwad",
+      "courses": [
+        {
+          "courseName": "SDM College of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209434_175",
+      "name": "E049",
+      "place": "BVV BEC Bagalkot",
+      "locationAddress": "E049, BVV BEC Bagalkot",
+      "courses": [
+        {
+          "courseName": "B V V Sangha Basaveshwar Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209536_977",
+      "name": "E023P",
+      "place": "PESCE Mandya",
+      "locationAddress": "E023P, PESCE Mandya",
+      "courses": [
+        {
+          "courseName": "PES College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209642_728",
+      "name": "E065",
+      "place": "JNNCE Shivamogga",
+      "locationAddress": "E065, JNNCE Shivamogga",
+      "courses": [
+        {
+          "courseName": "Jawaharlal Nehru National College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312209912_596",
+      "name": "E066",
+      "place": "UBDTCE Davangere",
+      "locationAddress": "E066, UBDTCE Davangere",
+      "courses": [
+        {
+          "courseName": "University B D T College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210017_465",
+      "name": "E021",
+      "place": "JSSCE Mysore",
+      "locationAddress": "E021, JSSCE Mysore",
+      "courses": [
+        {
+          "courseName": "JSS College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210125_97",
+      "name": "E087V",
+      "place": "VIT-B",
+      "locationAddress": "E087V, VIT-B",
+      "courses": [
+        {
+          "courseName": "Vivekananda Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210229_300",
+      "name": "E050",
+      "place": "NMAMIT",
+      "locationAddress": "E050, NMAMIT",
+      "courses": [
+        {
+          "courseName": "NMAM Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210335_932",
+      "name": "E016",
+      "place": "SIT Tumkur",
+      "locationAddress": "E016, SIT Tumkur",
+      "courses": [
+        {
+          "courseName": "Siddaganga Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210443_634",
+      "name": "E032",
+      "place": "NIE Mysore",
+      "locationAddress": "E032, NIE Mysore",
+      "courses": [
+        {
+          "courseName": "The National Institute of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210555_21",
+      "name": "E096E",
+      "place": "EPCET",
+      "locationAddress": "E096E, EPCET",
+      "courses": [
+        {
+          "courseName": "East Point College of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210667_510",
+      "name": "E144S",
+      "place": "SIT Mangalore",
+      "locationAddress": "E144S, SIT Mangalore",
+      "courses": [
+        {
+          "courseName": "Srinivas Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210773_327",
+      "name": "E037",
+      "place": "BVBCET",
+      "locationAddress": "E037, BVBCET",
+      "courses": [
+        {
+          "courseName": "BVB College of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312210879_239",
+      "name": "E052",
+      "place": "SJEC Mangalore",
+      "locationAddress": "E052, SJEC Mangalore",
+      "courses": [
+        {
+          "courseName": "St. Joseph Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211007_227",
+      "name": "E060",
+      "place": "MCE Hassan",
+      "locationAddress": "E060, MCE Hassan",
+      "courses": [
+        {
+          "courseName": "Malnad College of Engineering (Hassan)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211128_305",
+      "name": "E072",
+      "place": "CIT Bangalore",
+      "locationAddress": "E072, CIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Cambridge Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211253_781",
+      "name": "E095A",
+      "place": "AMCEC",
+      "locationAddress": "E095A, AMCEC",
+      "courses": [
+        {
+          "courseName": "AMC Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211386_861",
+      "name": "E154",
+      "place": "GAT Bangalore",
+      "locationAddress": "E154, GAT Bangalore",
+      "courses": [
+        {
+          "courseName": "Global Academy of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211494_64",
+      "name": "E153",
+      "place": "VVCE Mysore",
+      "locationAddress": "E153, VVCE Mysore",
+      "courses": [
+        {
+          "courseName": "Vidyavardhaka College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211595_191",
+      "name": "E014S",
+      "place": "SJCIT Chikballapur",
+      "locationAddress": "E014S, SJCIT Chikballapur",
+      "courses": [
+        {
+          "courseName": "SJC Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211697_378",
+      "name": "E018",
+      "place": "KIT Tiptur",
+      "locationAddress": "E018, KIT Tiptur",
+      "courses": [
+        {
+          "courseName": "Kalpataru Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211817_805",
+      "name": "E024",
+      "place": "AIT Soladevanahalli",
+      "locationAddress": "E024, AIT Soladevanahalli",
+      "courses": [
+        {
+          "courseName": "Atria Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312211925_58",
+      "name": "E026",
+      "place": "JCE Belagavi",
+      "locationAddress": "E026, JCE Belagavi",
+      "courses": [
+        {
+          "courseName": "Jain College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212028_869",
+      "name": "E039",
+      "place": "GIT Belagavi",
+      "locationAddress": "E039, GIT Belagavi",
+      "courses": [
+        {
+          "courseName": "Gogte Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212170_762",
+      "name": "E051",
+      "place": "MITE",
+      "locationAddress": "E051, MITE",
+      "courses": [
+        {
+          "courseName": "Mangalore Institute of Technology and Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212278_984",
+      "name": "E055",
+      "place": "PACE Mangalore",
+      "locationAddress": "E055, PACE Mangalore",
+      "courses": [
+        {
+          "courseName": "P A College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212386_890",
+      "name": "E068",
+      "place": "KSIT Bangalore",
+      "locationAddress": "E068, KSIT Bangalore",
+      "courses": [
+        {
+          "courseName": "K S Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212489_363",
+      "name": "E078",
+      "place": "TOCE Bangalore",
+      "locationAddress": "E078, TOCE Bangalore",
+      "courses": [
+        {
+          "courseName": "The Oxford College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212594_552",
+      "name": "E104N",
+      "place": "NCET",
+      "locationAddress": "E104N, NCET",
+      "courses": [
+        {
+          "courseName": "Nagarjuna College of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212858_511",
+      "name": "E017S",
+      "place": "SSIT Tumkur",
+      "locationAddress": "E017S, SSIT Tumkur",
+      "courses": [
+        {
+          "courseName": "Sri Siddhartha Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312212962_852",
+      "name": "E025",
+      "place": "DBIT",
+      "locationAddress": "E025, DBIT",
+      "courses": [
+        {
+          "courseName": "Don Bosco Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213070_668",
+      "name": "E062",
+      "place": "SCEM",
+      "locationAddress": "E062, SCEM",
+      "courses": [
+        {
+          "courseName": "Sahyadri College of Engineering and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213173_920",
+      "name": "E151",
+      "place": "SKIT Bangalore",
+      "locationAddress": "E151, SKIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Sri Krishna Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213292_459",
+      "name": "E015E",
+      "place": "EWIT",
+      "locationAddress": "E015E, EWIT",
+      "courses": [
+        {
+          "courseName": "East West Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213395_994",
+      "name": "E028",
+      "place": "TCE Gadag",
+      "locationAddress": "E028, TCE Gadag",
+      "courses": [
+        {
+          "courseName": "Tontadarya College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213505_335",
+      "name": "E031",
+      "place": "SJCE Mysore",
+      "locationAddress": "E031, SJCE Mysore",
+      "courses": [
+        {
+          "courseName": "Sri Jayachamarajendra College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213611_176",
+      "name": "E038",
+      "place": "BEC Bagalkot",
+      "locationAddress": "E038, BEC Bagalkot",
+      "courses": [
+        {
+          "courseName": "Basaveshwar Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213721_336",
+      "name": "E067",
+      "place": "KSSEM",
+      "locationAddress": "E067, KSSEM",
+      "courses": [
+        {
+          "courseName": "K S School of Engineering and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213831_530",
+      "name": "E074",
+      "place": "RRCE",
+      "locationAddress": "E074, RRCE",
+      "courses": [
+        {
+          "courseName": "Rajarajeswari College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312213939_249",
+      "name": "E077",
+      "place": "VVIET Mysore",
+      "locationAddress": "E077, VVIET Mysore",
+      "courses": [
+        {
+          "courseName": "Vidya Vikas Institute of Engineering and Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214046_84",
+      "name": "E099",
+      "place": "VVIET",
+      "locationAddress": "E099, VVIET",
+      "courses": [
+        {
+          "courseName": "Vidya Vikas Institute of Engineering and Technology (Mysore Main)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214152_263",
+      "name": "E108S",
+      "place": "SCE Bangalore",
+      "locationAddress": "E108S, SCE Bangalore",
+      "courses": [
+        {
+          "courseName": "Saptagiri College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214262_646",
+      "name": "E150",
+      "place": "PESITM Shimoga",
+      "locationAddress": "E150, PESITM Shimoga",
+      "courses": [
+        {
+          "courseName": "PES Institute of Technology and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214368_566",
+      "name": "E022",
+      "place": "OXCE",
+      "locationAddress": "E022, OXCE",
+      "courses": [
+        {
+          "courseName": "Oxford College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214487_62",
+      "name": "E029",
+      "place": "MMEC Belagavi",
+      "locationAddress": "E029, MMEC Belagavi",
+      "courses": [
+        {
+          "courseName": "Maratha Mandal Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214625_367",
+      "name": "E042",
+      "place": "KBNU",
+      "locationAddress": "E042, KBNU",
+      "courses": [
+        {
+          "courseName": "Khaja Bandanawaz University",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214742_110",
+      "name": "E044",
+      "place": "BKIT Bhalki",
+      "locationAddress": "E044, BKIT Bhalki",
+      "courses": [
+        {
+          "courseName": "Bheemanna Khandre Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214849_725",
+      "name": "E089B",
+      "place": "BTLIT",
+      "locationAddress": "E089B, BTLIT",
+      "courses": [
+        {
+          "courseName": "BTL Institute of Technology and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312214959_264",
+      "name": "E100",
+      "place": "SMVIT",
+      "locationAddress": "E100, SMVIT",
+      "courses": [
+        {
+          "courseName": "Shri Madhwa Vadiraja Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215068_809",
+      "name": "E046",
+      "place": "SMVCE Raichur",
+      "locationAddress": "E046, SMVCE Raichur",
+      "courses": [
+        {
+          "courseName": "H K E Society's Sir M Visvesvaraya College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215175_475",
+      "name": "E071",
+      "place": "KSIT",
+      "locationAddress": "E071, KSIT",
+      "courses": [
+        {
+          "courseName": "KS Institute of Technology (Kanakapura Rd)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215291_919",
+      "name": "E015D",
+      "place": "DTTIT KGF",
+      "locationAddress": "E015D, DTTIT KGF",
+      "courses": [
+        {
+          "courseName": "Dr. T. Thimmaiah Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215402_61",
+      "name": "E023S",
+      "place": "SIT Bangalore",
+      "locationAddress": "E023S, SIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Sambhram Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215514_737",
+      "name": "E033",
+      "place": "STJIT Ranebennur",
+      "locationAddress": "E033, STJIT Ranebennur",
+      "courses": [
+        {
+          "courseName": "Sri Taralabalu Jagadguru Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215624_57",
+      "name": "E035",
+      "place": "AITM Bhatkal",
+      "locationAddress": "E035, AITM Bhatkal",
+      "courses": [
+        {
+          "courseName": "Anjuman Institute of Technology and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215727_953",
+      "name": "E045B",
+      "place": "BITM Ballari",
+      "locationAddress": "E045B, BITM Ballari",
+      "courses": [
+        {
+          "courseName": "Ballari Institute of Technology and Management",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215838_637",
+      "name": "E076",
+      "place": "JIT Bangalore",
+      "locationAddress": "E076, JIT Bangalore",
+      "courses": [
+        {
+          "courseName": "Jyothy Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312215944_523",
+      "name": "E092",
+      "place": "PDACE Kalaburagi Govt",
+      "locationAddress": "E092, PDACE Kalaburagi Govt",
+      "courses": [
+        {
+          "courseName": "PDA College of Engineering (Govt Autonomous)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216052_407",
+      "name": "E043",
+      "place": "GNDEC Bidar",
+      "locationAddress": "E043, GNDEC Bidar",
+      "courses": [
+        {
+          "courseName": "Guru Nanak Dev Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216180_480",
+      "name": "E044B",
+      "place": "BKIT Bidar",
+      "locationAddress": "E044B, BKIT Bidar",
+      "courses": [
+        {
+          "courseName": "Bheemanna Khandre Institute of Technology (Bidar City)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216284_233",
+      "name": "E054",
+      "place": "KVGCE Sullia",
+      "locationAddress": "E054, KVGCE Sullia",
+      "courses": [
+        {
+          "courseName": "K V G College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216389_14",
+      "name": "E053",
+      "place": "CEC Bantwal",
+      "locationAddress": "E053, CEC Bantwal",
+      "courses": [
+        {
+          "courseName": "Canara Engineering College",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216502_524",
+      "name": "E070",
+      "place": "GMIT Davangere",
+      "locationAddress": "E070, GMIT Davangere",
+      "courses": [
+        {
+          "courseName": "GM Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216609_626",
+      "name": "E073",
+      "place": "ACSCE",
+      "locationAddress": "E073, ACSCE",
+      "courses": [
+        {
+          "courseName": "ACS College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216716_657",
+      "name": "E090",
+      "place": "GNDEC Bidar",
+      "locationAddress": "E090, GNDEC Bidar",
+      "courses": [
+        {
+          "courseName": "Guru Nanak Dev Engineering College (Bidar Aided)",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216842_43",
+      "name": "E139I",
+      "place": "ICEAS",
+      "locationAddress": "E139I, ICEAS",
+      "courses": [
+        {
+          "courseName": "Impact College of Engineering and Applied Sciences",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312216965_114",
+      "name": "E040",
+      "place": "HIT Nidasoshi",
+      "locationAddress": "E040, HIT Nidasoshi",
+      "courses": [
+        {
+          "courseName": "Hirasugar Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217069_782",
+      "name": "E042K",
+      "place": "KBNCE",
+      "locationAddress": "E042K, KBNCE",
+      "courses": [
+        {
+          "courseName": "Khaja Banda Nawaz College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217178_672",
+      "name": "E046H",
+      "place": "SLNCE Raichur",
+      "locationAddress": "E046H, SLNCE Raichur",
+      "courses": [
+        {
+          "courseName": "HKE Society's SLN College of Engineering",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217306_151",
+      "name": "E063",
+      "place": "SJMIT Chitradurga",
+      "locationAddress": "E063, SJMIT Chitradurga",
+      "courses": [
+        {
+          "courseName": "S J M Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217410_116",
+      "name": "E064",
+      "place": "AIT Chikkamagaluru",
+      "locationAddress": "E064, AIT Chikkamagaluru",
+      "courses": [
+        {
+          "courseName": "Adichunchanagiri Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217518_391",
+      "name": "E101C",
+      "place": "CIT Gubbi",
+      "locationAddress": "E101C, CIT Gubbi",
+      "courses": [
+        {
+          "courseName": "Channabasaveshwara Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217620_910",
+      "name": "E085",
+      "place": "GEC Ramanagara",
+      "locationAddress": "E085, GEC Ramanagara",
+      "courses": [
+        {
+          "courseName": "Government Engineering College Ramanagara",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217734_633",
+      "name": "E091",
+      "place": "NIT Raichur",
+      "locationAddress": "E091, NIT Raichur",
+      "courses": [
+        {
+          "courseName": "Navodaya Institute of Technology",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_csv_1783312217844_564",
+      "name": "E086",
+      "place": "GEC Chamarajanagar",
+      "locationAddress": "E086, GEC Chamarajanagar",
+      "courses": [
+        {
+          "courseName": "Government Engineering College Chamarajanagar",
+          "cutoffRank": 5000,
+          "fees": 150000,
+          "averagePackage": 6.5,
+          "highestPackage": 12
+        }
+      ],
+      "website": "",
+      "contactNumber": "",
+      "details": "Imported via CSV",
+      "images": [
+        "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800",
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+        "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=800",
+        "https://images.unsplash.com/photo-1498243691581-b145c3f54a5c?w=800",
+        "https://images.unsplash.com/photo-1562774053-701939374585?w=800"
+      ]
+    },
+    {
+      "id": "clg_1783314870533",
+      "name": "PES",
+      "place": "bengalore",
+      "locationAddress": "100 Feet Ring Road, BSK III Stage, Bangalore - 560085",
+      "website": "https://pes.edu/",
+      "contactNumber": "080-66017300",
+      "images": [
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/PES_University.jpg/1200px-PES_University.jpg",
+        "https://pes.edu/wp-content/uploads/2020/08/PES-University-Campus.jpg",
+        "https://media.getmyuni.com/cache/29/eb/29eb7e3a6f1accd3d6c5b2e5bdc3f5a6b/1582511958-4.jpg",
+        "https://www.shiksha.com/college/PES-University-Bangalore-3891/images/Infra-1-1234567890.jpg",
+        "https://www.pes.edu/wp-content/uploads/elementor/thumbs/PES-University-Bangalore-Campus-fg2x7y3zjy9n1n6h6r2b0e1o1o6y8e4u2a4o0y4q8s.jpg"
+      ],
+      "rating": 4.2,
+      "details": "PES University is a private university located in Bangalore, Karnataka. It has a beautiful campus with state-of-the-art infrastructure and modern facilities. The university is known for its academic excellence and has been ranked among the top private universities in India.",
+      "courses": [
+        {
+          "courseName": "Computer Science Engineering",
+          "fees": "315000",
+          "cutoffRank": 1250,
+          "cutoffRankPreviousYear": 1400,
+          "averagePackage": "7.5",
+          "highestPackage": "50.0"
+        },
+        {
+          "courseName": "Information Science Engineering",
+          "fees": 295000,
+          "cutoffRank": 2400,
+          "cutoffRankPreviousYear": 2600,
+          "averagePackage": 5.5,
+          "highestPackage": 45
+        },
+        {
+          "courseName": "Electronics & Communication Engineering",
+          "fees": 275000,
+          "cutoffRank": 4200,
+          "cutoffRankPreviousYear": 4500,
+          "averagePackage": 4.5,
+          "highestPackage": 42
+        }
+      ]
+    }
+  ],
+  "users": [],
+  "verificationSessions": []
+}

@@ -1,0 +1,6 @@
+{
+  "name": "CET TO COLLEGE",
+  "description": "A high-performance, 4-step college prediction dashboard utilizing Groq AI and a robust Karnataka higher-education database.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
