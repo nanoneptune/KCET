@@ -9,6 +9,9 @@ export interface CollegeCourse {
 }
 
 export interface College {
+  gallery?: string[];
+  type?: string;
+  established?: number;
   id: string;
   name: string;
   place: string;

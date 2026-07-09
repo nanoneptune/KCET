@@ -132,14 +132,10 @@ export default function StudentDashboard({
   };
 
   const handleSwipeRight = (collegeId: string) => {
-    setShowHeartAnimation(true);
-    setTimeout(() => {
-      setShowHeartAnimation(false);
-      if (!(currentUser.favorites || []).includes(collegeId)) {
-        handleToggleFavorite(collegeId);
-      }
-      setSwipeIndex(prev => prev + 1);
-    }, 600);
+    if (!(currentUser.favorites || []).includes(collegeId)) {
+      handleToggleFavorite(collegeId);
+    }
+    setSwipeIndex(prev => prev + 1);
   };
 
   const handleSwipeUp = (websiteUrl: string) => {
@@ -188,10 +184,10 @@ export default function StudentDashboard({
     doc.rect(0, 0, 210, 38, "F");
 
     // Decorative Gold Line
-    doc.setFillColor(244, 63, 94); // Amber 600
+    doc.setFillColor(217, 119, 6); // Amber 600
     doc.rect(0, 38, 210, 3, "F");
 
-    doc.setTextColor(251, 113, 133); // Amber 400
+    doc.setTextColor(251, 191, 36); // Amber 400
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.text("K-CET COUNSELLING CO-PILOT", 105, 18, { align: "center" });
@@ -204,7 +200,7 @@ export default function StudentDashboard({
     // 2. Student Profile Section
     doc.setFillColor(248, 245, 240);
     doc.rect(15, 52, 180, 28, "F");
-    doc.setDrawColor(244, 63, 94);
+    doc.setDrawColor(217, 119, 6);
     doc.setLineWidth(0.5);
     doc.rect(15, 52, 180, 28, "D");
 
@@ -227,7 +223,7 @@ export default function StudentDashboard({
     doc.setFontSize(13);
     doc.text("AI STRATEGY FORECAST REPORT", 15, 92);
 
-    doc.setDrawColor(244, 63, 94);
+    doc.setDrawColor(217, 119, 6);
     doc.setLineWidth(0.8);
     doc.line(15, 95, 195, 95);
 
@@ -282,10 +278,10 @@ export default function StudentDashboard({
       doc.setFillColor(26, 19, 11);
       doc.rect(0, 0, 210, 30, "F");
       
-      doc.setFillColor(244, 63, 94);
+      doc.setFillColor(217, 119, 6);
       doc.rect(0, 30, 210, 2.5, "F");
 
-      doc.setTextColor(251, 113, 133);
+      doc.setTextColor(251, 191, 36);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.text("RECOMMENDED STRATEGIC OPTION ENTRY", 105, 18, { align: "center" });
@@ -471,7 +467,7 @@ export default function StudentDashboard({
       </div>
 
       {/* MOBILE BOTTOM STICKY DOWN BAR FOOTER */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-100 shadow-2xl px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0c0e17]/95 backdrop-blur-md border-t border-slate-100 shadow-2xl px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-md mx-auto flex items-center justify-around">
           {[
             { id: 1, label: "Rank", icon: Target },
@@ -518,7 +514,7 @@ export default function StudentDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="space-y-6"
           >
             {/* STEP 01: RANK & CATEGORY */}
             <div className="backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-black/40 text-center">
@@ -595,7 +591,7 @@ export default function StudentDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="space-y-6"
           >
             {/* STEP 02: BRANCHES */}
             <div className="backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-black/40">
@@ -633,7 +629,7 @@ export default function StudentDashboard({
                         : "bg-slate-100 border-slate-100 text-slate-600 hover:border-rose-500/50 hover:text-rose-400"
                       }`}
                     >
-                      {isHot && <Zap className={`h-3 w-3 ${isSelected ? "text-rose-900 animate-pulse" : "text-rose-500"}`} />}
+                      {isHot && <Zap className={`h-3 w-3 ${isSelected ? "text-amber-900 animate-pulse" : "text-rose-500"}`} />}
                       <span>{course}</span>
                     </button>
                   );
@@ -665,187 +661,495 @@ export default function StudentDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="space-y-6"
           >
-            {/* KAMA STYLE HEADER BACKGROUND */}
-            <div className="absolute top-[-100px] left-[-20px] right-[-20px] h-[400px] bg-gradient-to-br from-rose-500 to-pink-500 rounded-b-[3rem] z-0 pointer-events-none" />
-
-            <div className="relative z-10">
-              {/* Header Matches */}
-              <div className="px-2 mb-6 text-center">
-                <h3 className="text-white font-black text-2xl mb-2 tracking-tight">Your Matches</h3>
-                <p className="text-white/90 text-sm font-bold">{processedColleges.length} colleges available</p>
+            {/* STEP 03: HEADER & TOGGLE */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight">College Exploration</h1>
+                <p className="text-xs text-rose-400 font-bold uppercase tracking-widest mt-1">Based on rank #{Number(cetRank).toLocaleString()} · {category}</p>
               </div>
-
-              {/* CARD CONTAINER */}
-              <div className="relative mt-8">
-                {/* Floating pill */}
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 bg-white shadow-md text-rose-500 px-4 py-1.5 rounded-full flex items-center space-x-1 font-bold text-xs border border-rose-100">
-                  <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-                  <span>College Match</span>
+              <div className="flex items-center flex-wrap gap-2.5">
+                {/* Segmented view controller */}
+                <div className="flex bg-slate-100 border border-slate-100 p-1 rounded-xl shrink-0">
+                  <button
+                    onClick={() => setViewMode("swipe")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center space-x-1 ${viewMode === "swipe" ? "bg-rose-500 text-white shadow-md font-extrabold" : "text-slate-500 hover:text-rose-300"}`}
+                  >
+                    <span>Swipe Matcher 🔥</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center space-x-1 ${viewMode === "list" ? "bg-rose-500 text-white shadow-md font-extrabold" : "text-slate-500 hover:text-rose-300"}`}
+                  >
+                    <span>List View 📋</span>
+                  </button>
                 </div>
 
-                {swipeIndex < processedColleges.length ? (() => {
-                  const college = processedColleges[swipeIndex];
-                  const probInfo = getProbabilityLabel(college.probability);
-                  const isFav = (currentUser.favorites || []).includes(college.id);
-                  const hasImages = currentCollegeHasOfficialImages && currentCollegeImages.length > 0;
-                  const imgUrl = hasImages ? currentCollegeImages[activeImageIndex] : "";
+                <button 
+                  onClick={() => setStep(2)}
+                  className="p-2.5 bg-slate-100 border border-slate-100 rounded-xl text-slate-600 hover:text-rose-400 hover:border-rose-500/50 transition-all cursor-pointer active:scale-95"
+                  title="Filter Branches"
+                >
+                  <Filter className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
 
-                  return (
-                    <motion.div
-                      layout
-                      drag="x"
-                      dragConstraints={{ left: 0, right: 0 }}
-                      onDragEnd={(e, { offset, velocity }) => {
-                        if (offset.x > 100) {
-                          handleSwipeRight(college.id);
-                        } else if (offset.x < -100) {
-                          handleSwipeLeft();
-                        }
-                      }}
-                      className="bg-white w-full rounded-[2.5rem] shadow-xl overflow-hidden text-slate-900 border border-slate-100 relative"
-                    >
-                      {/* Heart Animation Overlay */}
-                      <AnimatePresence>
-                        {showHeartAnimation && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 0.9] }}
-                            exit={{ scale: 2, opacity: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none"
-                          >
-                            <Heart className="h-40 w-40 text-rose-500 fill-rose-500 filter drop-shadow-2xl animate-pulse" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+            {/* THREE VIEWS: FAVORITES CARDS GRID OR TWO MATCHING VIEWS */}
+            {showFavoritesOnly ? (
+              /* FAVORITES GRID VIEW WITH BEAUTIFUL DETAILED CARDS */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {processedColleges.length > 0 ? (
+                  processedColleges.map((college) => {
+                    const probInfo = getProbabilityLabel(college.probability);
+                    const fallbacks = [
+                      "https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png"
+                    ];
+                    const collegeImg = (college.images && Array.isArray(college.images) && college.images.filter(img => img && img.trim() !== "")[0]) || fallbacks[0];
 
-                      {/* Image Top Half */}
-                      <div className="h-72 w-full relative bg-slate-900 flex items-center justify-center">
-                        {hasImages ? (
-                          <img 
-                            src={imgUrl}
-                            className="w-full h-full object-cover absolute inset-0"
+                    return (
+                      <motion.div
+                        layout
+                        key={college.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        whileHover={{ y: -4 }}
+                        onClick={() => onSelectCollege(college)}
+                        className="bg-white rounded-3xl border border-slate-100 shadow-2xl overflow-hidden flex flex-col justify-between cursor-pointer group hover:border-rose-500/40 transition-all duration-300"
+                      >
+                        {/* Card Header Image */}
+                        <div className="h-40 w-full relative overflow-hidden bg-slate-950 group/img">
+                          <img
+                            src={collegeImg}
                             alt={college.name}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
                           />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-rose-600 flex flex-col items-center justify-center text-white/50">
-                            <School className="w-24 h-24 mb-4 opacity-50" />
-                            <span className="font-bold tracking-widest uppercase text-xs">Campus View</span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                        
-                        <div className="absolute bottom-4 left-4 right-4 text-white">
-                          <h2 className="text-2xl font-black leading-tight drop-shadow-md">{college.name}</h2>
-                          <div className="flex items-center space-x-1 mt-1 text-sm font-semibold opacity-90">
-                            <MapPin className="w-4 h-4" />
-                            <span>{college.place} • {college.probability}% Match</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Card Content Details */}
-                      <div className="p-6">
-                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5">
-                          {college.details || `Top college offering ${college.bestMatchedCourse?.courseName || "various courses"} for your rank.`}
-                        </p>
-
-                        {/* Badges */}
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>🏆</span>
-                            <span>{college.rating} Rating</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>📚</span>
-                            <span>{college.bestMatchedCourse?.courseName || "General"}</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>🎯</span>
-                            <span>Cutoff: #{college.bestMatchedCourse?.cutoffRank?.toLocaleString() || "N/A"}</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>📊</span>
-                            <span>{probInfo.label}</span>
-                          </span>
-                        </div>
-
-                        {/* Remove / View Details text button */}
-                        <div className="text-center">
-                          <button 
-                            onClick={() => onSelectCollege(college)}
-                            className="text-slate-400 font-bold text-xs flex items-center justify-center space-x-1 w-full"
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent" />
+                          
+                          {/* Heart Button in corner */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleFavorite(college.id);
+                            }}
+                            className="absolute right-3 top-3 p-2 bg-white/90 border border-slate-100 rounded-full shadow-md text-rose-500 hover:scale-110 active:scale-90 transition-transform cursor-pointer z-10"
+                            title="Remove from favorites"
                           >
-                            <span>ℹ️ Info & Specs</span>
+                            <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+                          </button>
+
+                          {/* Probability Badge */}
+                          <div className={`absolute left-3 top-3 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border backdrop-blur-md ${probInfo.bg}/90 ${probInfo.border}/40 ${probInfo.color} z-10`}>
+                            {probInfo.label} ({college.probability}%)
+                          </div>
+
+                          {/* College Name & Place overlay */}
+                          <div className="absolute bottom-3 left-4 right-4 text-slate-900 z-10">
+                            <h3 className="font-extrabold text-sm line-clamp-1">{college.name}</h3>
+                            <p className="text-[10px] text-slate-600 flex items-center mt-0.5 font-semibold">
+                              <MapPin className="h-3 w-3 mr-1 shrink-0 text-rose-400" />
+                              <span className="truncate">{college.place}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Card Content details */}
+                        <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                          <div className="space-y-3.5">
+                            {/* Best Matched Course detail */}
+                            <div className="bg-white rounded-xl p-3 border border-slate-100">
+                              <span className="text-[8.5px] text-rose-400/80 font-black uppercase tracking-wider block">Recommended Branch</span>
+                              <span className="text-xs font-black text-slate-900 block truncate mt-0.5">
+                                {college.bestMatchedCourse?.courseName || "General Seat"}
+                              </span>
+                              <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-500">
+                                <span>Cutoff Rank:</span>
+                                <span className="font-mono font-black text-rose-400">
+                                  #{college.bestMatchedCourse?.cutoffRank ? college.bestMatchedCourse.cutoffRank.toLocaleString() : "N/A"}
+                                </span>
+                              </div>
+                            </div>
+
+
+                          </div>
+
+                          {/* Explore button */}
+                          <div className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center space-x-1">
+                            <span>Explore Details</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full py-20 text-center bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-dashed border-slate-100 flex flex-col items-center justify-center p-8">
+                    <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/25 rounded-full flex items-center justify-center mb-4">
+                      <Heart className="h-8 w-8 text-rose-400 animate-pulse" />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900">No favorited colleges yet</h3>
+                    <p className="text-slate-500 text-xs mt-1 max-w-xs mx-auto font-medium">
+                      Go back to matching mode and tap the <span className="text-rose-400 font-extrabold">Heart ❤️</span> or double-tap cards to save colleges to your list!
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : viewMode === "swipe" ? (
+              /* DATING APP STYLE SWIPE INTERFACE */
+              <div className="flex flex-col items-center justify-center py-4">
+                {processedColleges.length > 0 ? (
+                  swipeIndex >= processedColleges.length ? (
+                    /* ALL SWIPED SCREEN */
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="w-full max-w-md backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-10 text-center shadow-2xl shadow-black/40 space-y-6"
+                    >
+                      <div className="w-20 h-20 bg-rose-500/10 border border-rose-500/25 rounded-full flex items-center justify-center mx-auto relative">
+                        <Sparkles className="h-10 w-10 text-rose-400" />
+                        <span className="absolute -top-1 -right-1 text-2xl">🎉</span>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-black text-slate-900">You've swiped through all matches!</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed max-w-xs mx-auto">
+                          Check out your <span className="font-extrabold text-rose-400">Favorites ❤️</span> in the top navigation bar, adjust your preferred cutoff branch settings, or review again below!
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => setSwipeIndex(0)}
+                          className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-black transition-all shadow-lg shadow-rose-500/10 active:scale-98 cursor-pointer flex items-center justify-center space-x-1.5"
+                        >
+                          <RefreshCw className="h-4 w-4 stroke-[2.5]" />
+                          <span>Restart Swipe Swapping</span>
+                        </button>
+                        <button
+                          onClick={() => setViewMode("list")}
+                          className="w-full py-3 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-98"
+                        >
+                          Switch to List Mode
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (() => {
+                    const college = processedColleges[swipeIndex];
+                    const probInfo = getProbabilityLabel(college.probability);
+                    const isFav = (currentUser.favorites || []).includes(college.id);
+                    return (
+                      <div className="w-full max-w-md space-y-4">
+                        {/* Swipe counter */}
+                        <div className="flex items-center justify-between px-2 text-[10.5px] font-bold text-slate-500 uppercase tracking-widest">
+                          <span>Swipe Card {swipeIndex + 1} of {processedColleges.length}</span>
+                          <span className="text-rose-400 font-black">🔥 Match Mode</span>
+                        </div>
+
+                        {/* Interactive Swipe card container */}
+                        <motion.div
+                          layout
+                          onDoubleClick={() => handleCardDoubleClick(college.id)}
+                          className="h-[560px] w-full rounded-[2.5rem] border border-slate-100 shadow-2xl overflow-hidden relative bg-slate-950 text-slate-900 select-none group"
+                          whileTap={{ scale: 0.985 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
+                          {/* Centered Beating Double-Tap Heart animation */}
+                          <AnimatePresence>
+                            {showHeartAnimation && (
+                              <motion.div 
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 0.9] }}
+                                exit={{ scale: 2, opacity: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="absolute inset-0 z-30 flex items-center justify-center bg-black/15 backdrop-blur-xs pointer-events-none"
+                              >
+                                <Heart className="h-32 w-32 text-rose-500 fill-rose-500 filter drop-shadow-2xl animate-pulse" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Image full filling middle section or Google Images embed */}
+                          {currentCollegeHasOfficialImages ? (
+                            <img
+                              src={currentCollegeImages[activeImageIndex]}
+                              className="w-full h-full object-cover absolute inset-0 z-0 select-none brightness-[0.82] transition-all duration-300"
+                              alt={college.name}
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 z-0 bg-slate-900 overflow-hidden">
+                              {interactWithIframe ? (
+                                <iframe
+                                  src={`https://www.google.com/search?igu=1&q=${encodeURIComponent(college.name)}+campus&tbm=isch`}
+                                  className="w-full h-full border-0 absolute inset-0 z-0"
+                                  title={`Google Image Search for ${college.name}`}
+                                />
+                              ) : (
+                                <>
+                                  <iframe
+                                    src={`https://www.google.com/search?igu=1&q=${encodeURIComponent(college.name)}+campus&tbm=isch`}
+                                    className="w-full h-full border-0 absolute inset-0 z-0 pointer-events-none opacity-80"
+                                    title={`Google Image Search for ${college.name}`}
+                                  />
+                                  <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center p-6 text-center">
+                                    <Globe className="h-10 w-10 text-rose-400 mb-3 animate-bounce" />
+                                    <p className="text-xs font-black uppercase tracking-wider text-rose-200 mb-1">
+                                      Google Live Images Search
+                                    </p>
+                                    <p className="text-[10px] text-slate-600 max-w-xs mb-4">
+                                      No official uploaded image. Tap below to scroll and explore live campus photos!
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInteractWithIframe(true);
+                                      }}
+                                      className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-slate-900 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-lg border border-rose-500/20 active:scale-95 transition-all cursor-pointer"
+                                    >
+                                      👆 Click to Interact
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Top-to-bottom & bottom-to-top background gradients for absolute legibility */}
+                          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent z-10 pointer-events-none" />
+
+                          {/* Top Left: Cutoff Probability Match Badge */}
+                          <div className="absolute left-4 top-4 z-20 pointer-events-none">
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border shadow-md backdrop-blur-md ${probInfo.bg} ${probInfo.border} ${probInfo.color}`}>
+                              {probInfo.label} • {college.probability}% Match
+                            </span>
+                          </div>
+
+                          {/* Corner miniature Thumbnail images (The requested 5 corner images) */}
+                          <div className="absolute right-4 top-4 z-20 flex flex-col space-y-2">
+                            {currentCollegeHasOfficialImages ? (
+                              currentCollegeImages.map((imgUrl, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveImageIndex(idx);
+                                  }}
+                                  className={`w-9 h-9 rounded-xl overflow-hidden border-2 shadow-lg transition-all shrink-0 cursor-pointer hover:scale-110 active:scale-95 ${activeImageIndex === idx ? "border-rose-400 scale-105 shadow-rose-500/40" : "border-white/40 opacity-70"}`}
+                                  title={`Campus View ${idx + 1}`}
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    className="w-full h-full object-cover select-none pointer-events-none"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </button>
+                              ))
+                            ) : (
+                              <div className="flex flex-col space-y-2 items-center">
+                                <span className="flex items-center space-x-1 px-2.5 py-1.5 bg-rose-600/90 text-slate-900 border border-rose-500/30 backdrop-blur-md rounded-xl text-[9px] font-black uppercase tracking-wider shadow-md">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping mr-1" />
+                                  <span>Live</span>
+                                </span>
+                                {interactWithIframe && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setInteractWithIframe(false);
+                                    }}
+                                    className="w-9 h-9 rounded-xl bg-slate-900/95 border border-white/20 text-slate-900 flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition-all text-xs"
+                                    title="Lock Swipe Gestures"
+                                  >
+                                    🔒
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Bottom College Description & Details section */}
+                          <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 z-20 space-y-4">
+                            {/* College Title & Rating */}
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="min-w-0">
+                                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate filter drop-shadow-md">
+                                  {college.name}
+                                </h2>
+                                <div className="flex items-center space-x-1.5 text-xs font-extrabold text-rose-200 mt-1 filter drop-shadow-sm">
+                                  <MapPin className="h-3.5 w-3.5 text-rose-400 shrink-0" />
+                                  <span>{college.place}</span>
+                                </div>
+                              </div>
+                              {/* Ratings Badge */}
+                              <div className="flex items-center space-x-1 px-2.5 py-1 bg-rose-500/25 border border-rose-500/35 rounded-xl shrink-0 backdrop-blur-md">
+                                <span className="text-rose-300 font-bold text-xs">⭐</span>
+                                <span className="text-amber-100 font-black text-[11px]">
+                                  {college.rating || (4.0 + (college.probability % 10) / 10).toFixed(1)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Best matched Course information */}
+                            <div className="bg-slate-100 backdrop-blur-xs border border-slate-100 p-3 rounded-2xl space-y-1">
+                              <span className="block text-[9px] font-bold text-rose-400 uppercase tracking-widest">Recommended cutoff match</span>
+                              <div className="flex justify-between items-center">
+                                <span className="font-extrabold text-xs text-slate-900 truncate mr-2">{college.bestMatchedCourse?.courseName}</span>
+                                <span className="text-[10px] text-slate-600 shrink-0 font-mono">Cutoff: #{college.bestMatchedCourse?.cutoffRank}</span>
+                              </div>
+                            </div>
+
+
+
+                            {/* Swipe Up indicators */}
+                            <div
+                              onClick={() => handleSwipeUp(college.website)}
+                              className="flex items-center justify-center space-x-1.5 text-[9px] text-slate-600 font-black uppercase tracking-widest pt-2.5 border-t border-slate-100 cursor-pointer hover:text-slate-900 transition-colors"
+                            >
+                              <span className="animate-bounce">Swipe Up or Tap to Browse official site ↗</span>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* HIGH-END INTERACTIVE ACTIONS ROW (COOL DESIGN) */}
+                        <div className="flex items-center justify-center gap-4 py-2">
+                          {/* Reject / Pass button */}
+                          <button
+                            onClick={handleSwipeLeft}
+                            className="w-14 h-14 bg-slate-100 hover:bg-rose-500/15 border border-slate-100 rounded-full flex items-center justify-center text-rose-400 shadow-xl hover:shadow-rose-500/10 active:scale-90 transition-all cursor-pointer shrink-0"
+                            title="Pass"
+                          >
+                            <span className="text-xl font-black">✕</span>
+                          </button>
+
+                          {/* Open in Browser In-App */}
+                          <button
+                            onClick={() => handleSwipeUp(college.website)}
+                            className="px-6 py-3 bg-white hover:bg-slate-100 border border-slate-100 rounded-2xl text-rose-400 text-xs font-black flex items-center space-x-1.5 active:scale-95 transition-all shadow-md cursor-pointer"
+                            title="Visit Official Website"
+                          >
+                            <Globe className="h-4 w-4 text-rose-400" />
+                            <span>In-App Browser</span>
+                          </button>
+
+                          {/* Specs detail modal */}
+                          <button
+                            onClick={() => onSelectCollege(college)}
+                            className="px-6 py-3 bg-slate-100 hover:bg-slate-200 border border-slate-100 rounded-2xl text-slate-600 text-xs font-black flex items-center space-x-1.5 active:scale-95 transition-all shadow-md cursor-pointer"
+                            title="View Full Specifications"
+                          >
+                            <Info className="h-4 w-4 text-slate-500" />
+                            <span>Specs</span>
+                          </button>
+
+                          {/* Save / Favorite button */}
+                          <button
+                            onClick={() => handleSwipeRight(college.id)}
+                            className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-all cursor-pointer shrink-0 border ${isFav ? "bg-rose-500 border-rose-500 text-white" : "bg-slate-100 border-slate-100 text-rose-400 hover:bg-rose-500/10"}`}
+                            title="Save / Favorite"
+                          >
+                            <Heart className={`h-6 w-6 ${isFav ? "fill-black" : ""}`} />
                           </button>
                         </div>
                       </div>
-                    </motion.div>
-                  );
-                })() : (
-                  <div className="bg-white w-full rounded-[2.5rem] shadow-xl p-10 text-center border border-slate-100">
-                    <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-10 w-10 text-rose-500" />
-                    </div>
-                    <h3 className="text-xl font-black text-slate-900 mb-2">No more matches!</h3>
-                    <p className="text-slate-500 text-sm mb-6">You have swiped through all available colleges for your criteria.</p>
-                    <button 
-                      onClick={() => setSwipeIndex(0)}
-                      className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold active:scale-95 transition-all"
-                    >
-                      Start Over
-                    </button>
-                  </div>
-                )}
-
-                {/* Bottom Swipe Actions */}
-                {swipeIndex < processedColleges.length && (
-                  <div className="flex justify-between items-center mt-6 px-4">
-                    <button 
-                      onClick={handleSwipeLeft}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-slate-400 hover:text-rose-500 active:scale-90 transition-all"
-                    >
-                      <span className="text-2xl font-light">✕</span>
-                    </button>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                      Keep Swiping
-                    </div>
-                    <button 
-                      onClick={() => handleSwipeRight(processedColleges[swipeIndex].id)}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-rose-500 active:scale-90 transition-all"
-                    >
-                      <Heart className={`h-7 w-7 ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500' : ''}`} />
-                    </button>
+                    );
+                  })()
+                ) : (
+                  <div className="space-y-3 w-full max-w-md">
+                    <p className="text-center text-xs font-bold text-slate-500 mb-2">Recommended Colleges from Database</p>
+                    {colleges.slice(0, 5).map(college => (
+                      <div key={college.id} className="p-4 bg-white/90 border border-slate-100 rounded-3xl shadow-md">
+                        <h4 className="font-bold text-sm text-slate-900">{college.name}</h4>
+                        <p className="text-xs text-slate-500">{college.place} • {college.courses?.[0]?.courseName || "Computer Science"}</p>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
-          </motion.div>
+            ) : (
+              /* ORIGINAL DETAILED PROBABILITY LIST VIEW */
+              <div className="space-y-3">
+                {processedColleges.length > 0 ? (
+                  processedColleges.map((college) => {
+                    const probInfo = getProbabilityLabel(college.probability);
+                    return (
+                      <motion.div
+                        layout
+                        key={college.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={() => onSelectCollege(college)}
+                        className="backdrop-blur-md bg-white/90 border border-slate-100 rounded-3xl p-5 shadow-2xl shadow-black/45 hover:border-rose-500/50 hover:shadow-2xl transition-all cursor-pointer group flex items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center space-x-4 flex-1 min-w-0">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center p-1.5 shrink-0 border shadow-md bg-white border-slate-100`}>
+                            <img src="https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png" alt="Logo" className="w-full h-full object-contain" />
+                          </div>
+                          <div className="min-w-0 overflow-hidden">
+                            <h3 className="text-base font-black text-slate-900 group-hover:text-rose-400 transition-colors truncate">
+                              {college.name}
+                            </h3>
+                            <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                              <MapPin className="h-3 w-3 shrink-0" />
+                              <span className="truncate text-slate-500">{college.place}</span>
+                              <span className="text-slate-600">•</span>
+                              <span className="text-rose-400 truncate font-extrabold">{college.bestMatchedCourse?.courseName}</span>
+                            </div>
+                          </div>
+                        </div>
 
+                        <div className="text-right shrink-0">
+                          <div className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full inline-block mb-1 border ${probInfo.bg} ${probInfo.border} ${probInfo.color}`}>
+                            {probInfo.label}
+                          </div>
+                          <div className="text-xl font-black text-slate-900 tabular-nums">
+                            {college.probability}%
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <div className="space-y-3 w-full">
+                    <p className="text-center text-xs font-bold text-slate-500 mb-2">Recommended Colleges from Database</p>
+                    {colleges.slice(0, 5).map(college => (
+                      <div key={college.id} className="p-4 bg-white/90 border border-slate-100 rounded-3xl shadow-md">
+                        <h4 className="font-bold text-sm text-slate-900">{college.name}</h4>
+                        <p className="text-xs text-slate-500">{college.place} • {college.courses?.[0]?.courseName || "Computer Science"}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={triggerAiPrediction}
+              className="w-full py-4 mt-6 bg-gradient-to-r from-rose-500 to-rose-600 text-white font-black rounded-2xl flex items-center justify-center space-x-2 hover:from-rose-400 hover:to-rose-500 transition-all shadow-xl shadow-rose-500/20 cursor-pointer active:scale-99"
+            >
+              <Sparkles className="h-4 w-4 text-white animate-pulse" />
+              <span>Get AI Strategy Report</span>
+            </button>
+          </motion.div>
         )}
+
         {step === 4 && (
           <motion.div
             key="step4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="space-y-6"
           >
             {/* STEP 04: STRATEGIC OPTIONS */}
-            <div className="backdrop-blur-2xl bg-white/60 border border-white/60 rounded-[2.5rem] p-8 text-slate-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
-              {/* Decorative gradient orb */}
-              <div className="absolute top-[-50%] right-[-20%] w-64 h-64 bg-rose-400/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-pink-400/20 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="bg-white/95 border border-slate-100 rounded-[2.5rem] p-8 text-slate-900 shadow-2xl">
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">Strategic Option Entry</h2>
-                  <p className="text-[10px] text-rose-500 mt-1.5 uppercase tracking-widest font-black">Recommended Sequence for Counseling</p>
+                  <h2 className="text-xl font-black text-slate-900">Strategic Option Entry</h2>
+                  <p className="text-xs text-rose-400 mt-1 uppercase tracking-widest font-black">Recommended Sequence for Counseling</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2.5 bg-white/80 hover:bg-white border border-rose-100 text-rose-500 rounded-xl transition-all shadow-sm cursor-pointer">
+                  <button className="p-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl transition-all cursor-pointer">
                     <Share2 className="h-4 w-4" />
                   </button>
                   <button 
@@ -1042,7 +1346,7 @@ export default function StudentDashboard({
             </div>
 
             {/* Friendly CSP Frame Embedding Advisory Banner */}
-            <div className="bg-rose-50 border-b border-rose-200/60 px-6 py-2.5 flex items-center justify-between text-rose-900 text-xs font-semibold shrink-0 flex-wrap gap-1.5">
+            <div className="bg-amber-50 border-b border-rose-200/60 px-6 py-2.5 flex items-center justify-between text-amber-900 text-xs font-semibold shrink-0 flex-wrap gap-1.5">
               <span className="flex items-center">
                 <Info className="h-4 w-4 mr-2 text-rose-600 shrink-0" />
                 <span>Note: If this college portal fails to load or says "took too long to respond", it is due to security policies restricting frame embedding. Click "Open in New Tab" to view it directly.</span>
@@ -1051,7 +1355,7 @@ export default function StudentDashboard({
                 href={inAppSiteUrl.startsWith("http") ? inAppSiteUrl : `https://${inAppSiteUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-rose-700 hover:text-rose-900 underline font-bold whitespace-nowrap"
+                className="text-amber-700 hover:text-amber-900 underline font-bold whitespace-nowrap"
               >
                 Open Directly →
               </a>

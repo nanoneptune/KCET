@@ -1,0 +1,201 @@
+                          <div className="absolute bottom-3 left-4 right-4 text-slate-900 z-10">
+                            <h3 className="font-extrabold text-sm line-clamp-1">{college.name}</h3>
+                            <p className="text-[10px] text-slate-600 flex items-center mt-0.5 font-semibold">
+                              <MapPin className="h-3 w-3 mr-1 shrink-0 text-rose-400" />
+                              <span className="truncate">{college.place}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Card Content details */}
+                        <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
+                          <div className="space-y-3.5">
+                            {/* Best Matched Course detail */}
+                            <div className="bg-white rounded-xl p-3 border border-slate-100">
+                              <span className="text-[8.5px] text-rose-400/80 font-black uppercase tracking-wider block">Recommended Branch</span>
+                              <span className="text-xs font-black text-slate-900 block truncate mt-0.5">
+                                {college.bestMatchedCourse?.courseName || "General Seat"}
+                              </span>
+                              <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-500">
+                                <span>Cutoff Rank:</span>
+                                <span className="font-mono font-black text-rose-400">
+                                  #{college.bestMatchedCourse?.cutoffRank ? college.bestMatchedCourse.cutoffRank.toLocaleString() : "N/A"}
+                                </span>
+                              </div>
+                            </div>
+
+
+                          </div>
+
+                          {/* Explore button */}
+                          <div className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center space-x-1">
+                            <span>Explore Details</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full py-20 text-center bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-dashed border-slate-100 flex flex-col items-center justify-center p-8">
+                    <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/25 rounded-full flex items-center justify-center mb-4">
+                      <Heart className="h-8 w-8 text-rose-400 animate-pulse" />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900">No favorited colleges yet</h3>
+                    <p className="text-slate-500 text-xs mt-1 max-w-xs mx-auto font-medium">
+                      Go back to matching mode and tap the <span className="text-rose-400 font-extrabold">Heart ❤️</span> or double-tap cards to save colleges to your list!
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : viewMode === "swipe" ? (
+              /* DATING APP STYLE SWIPE INTERFACE */
+              <div className="flex flex-col items-center justify-center py-4">
+                {processedColleges.length > 0 ? (
+                  swipeIndex >= processedColleges.length ? (
+                    /* ALL SWIPED SCREEN */
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="w-full max-w-md backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-10 text-center shadow-2xl shadow-black/40 space-y-6"
+                    >
+                      <div className="w-20 h-20 bg-rose-500/10 border border-rose-500/25 rounded-full flex items-center justify-center mx-auto relative">
+                        <Sparkles className="h-10 w-10 text-rose-400" />
+                        <span className="absolute -top-1 -right-1 text-2xl">🎉</span>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-black text-slate-900">You've swiped through all matches!</h3>
+                        <p className="text-slate-500 text-xs leading-relaxed max-w-xs mx-auto">
+                          Check out your <span className="font-extrabold text-rose-400">Favorites ❤️</span> in the top navigation bar, adjust your preferred cutoff branch settings, or review again below!
+                        </p>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => setSwipeIndex(0)}
+                          className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-black transition-all shadow-lg shadow-rose-500/10 active:scale-98 cursor-pointer flex items-center justify-center space-x-1.5"
+                        >
+                          <RefreshCw className="h-4 w-4 stroke-[2.5]" />
+                          <span>Restart Swipe Swapping</span>
+                        </button>
+                        <button
+                          onClick={() => setViewMode("list")}
+                          className="w-full py-3 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-98"
+                        >
+                          Switch to List Mode
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (() => {
+                    const college = processedColleges[swipeIndex];
+                    const probInfo = getProbabilityLabel(college.probability);
+                    const isFav = (currentUser.favorites || []).includes(college.id);
+                    return (
+                      <div className="w-full max-w-md space-y-4">
+                        {/* Swipe counter */}
+                        <div className="flex items-center justify-between px-2 text-[10.5px] font-bold text-slate-500 uppercase tracking-widest">
+                          <span>Swipe Card {swipeIndex + 1} of {processedColleges.length}</span>
+                          <span className="text-rose-400 font-black">🔥 Match Mode</span>
+                        </div>
+
+                        {/* Interactive Swipe card container */}
+                        <motion.div
+                          layout
+                          onDoubleClick={() => handleCardDoubleClick(college.id)}
+                          className="h-[560px] w-full rounded-[2.5rem] border border-slate-100 shadow-2xl overflow-hidden relative bg-slate-950 text-slate-900 select-none group"
+                          whileTap={{ scale: 0.985 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        >
+                          {/* Centered Beating Double-Tap Heart animation */}
+                          <AnimatePresence>
+                            {showHeartAnimation && (
+                              <motion.div 
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 0.9] }}
+                                exit={{ scale: 2, opacity: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="absolute inset-0 z-30 flex items-center justify-center bg-black/15 backdrop-blur-xs pointer-events-none"
+                              >
+                                <Heart className="h-32 w-32 text-rose-500 fill-rose-500 filter drop-shadow-2xl animate-pulse" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Image full filling middle section or Google Images embed */}
+                          {currentCollegeHasOfficialImages ? (
+                            <img
+                              src={currentCollegeImages[activeImageIndex]}
+                              className="w-full h-full object-cover absolute inset-0 z-0 select-none brightness-[0.82] transition-all duration-300"
+                              alt={college.name}
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 z-0 bg-slate-900 overflow-hidden">
+                              {interactWithIframe ? (
+                                <iframe
+                                  src={`https://www.google.com/search?igu=1&q=${encodeURIComponent(college.name)}+campus&tbm=isch`}
+                                  className="w-full h-full border-0 absolute inset-0 z-0"
+                                  title={`Google Image Search for ${college.name}`}
+                                />
+                              ) : (
+                                <>
+                                  <iframe
+                                    src={`https://www.google.com/search?igu=1&q=${encodeURIComponent(college.name)}+campus&tbm=isch`}
+                                    className="w-full h-full border-0 absolute inset-0 z-0 pointer-events-none opacity-80"
+                                    title={`Google Image Search for ${college.name}`}
+                                  />
+                                  <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center p-6 text-center">
+                                    <Globe className="h-10 w-10 text-rose-400 mb-3 animate-bounce" />
+                                    <p className="text-xs font-black uppercase tracking-wider text-rose-200 mb-1">
+                                      Google Live Images Search
+                                    </p>
+                                    <p className="text-[10px] text-slate-600 max-w-xs mb-4">
+                                      No official uploaded image. Tap below to scroll and explore live campus photos!
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInteractWithIframe(true);
+                                      }}
+                                      className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-slate-900 font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-lg border border-rose-500/20 active:scale-95 transition-all cursor-pointer"
+                                    >
+                                      👆 Click to Interact
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Top-to-bottom & bottom-to-top background gradients for absolute legibility */}
+                          <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent z-10 pointer-events-none" />
+
+                          {/* Top Left: Cutoff Probability Match Badge */}
+                          <div className="absolute left-4 top-4 z-20 pointer-events-none">
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border shadow-md backdrop-blur-md ${probInfo.bg} ${probInfo.border} ${probInfo.color}`}>
+                              {probInfo.label} • {college.probability}% Match
+                            </span>
+                          </div>
+
+                          {/* Corner miniature Thumbnail images (The requested 5 corner images) */}
+                          <div className="absolute right-4 top-4 z-20 flex flex-col space-y-2">
+                            {currentCollegeHasOfficialImages ? (
+                              currentCollegeImages.map((imgUrl, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveImageIndex(idx);
+                                  }}
+                                  className={`w-9 h-9 rounded-xl overflow-hidden border-2 shadow-lg transition-all shrink-0 cursor-pointer hover:scale-110 active:scale-95 ${activeImageIndex === idx ? "border-rose-400 scale-105 shadow-rose-500/40" : "border-white/40 opacity-70"}`}
+                                  title={`Campus View ${idx + 1}`}
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    className="w-full h-full object-cover select-none pointer-events-none"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </button>
+                              ))
+                            ) : (
+                              <div className="flex flex-col space-y-2 items-center">

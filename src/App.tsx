@@ -67,6 +67,18 @@ export default function App() {
 
   // Student Profile Updates
   const handleUpdateProfile = async (updated: StudentProfile) => {
+    // Save locally first for instant reactive response
+    setCurrentUser(updated);
+    localStorage.setItem("predictor_student", JSON.stringify(updated));
+
+    // Sync active selected college favorite state if open
+    if (selectedCollege) {
+      const updatedSelected = colleges.find(c => c.id === selectedCollege.id);
+      if (updatedSelected) {
+        setSelectedCollege(updatedSelected);
+      }
+    }
+
     try {
       const res = await fetch("/api/auth/update-profile", {
         method: "POST",
@@ -84,19 +96,11 @@ export default function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // Save to React State & localStorage
+      // Update with server's finalized data
       setCurrentUser(data.user);
       localStorage.setItem("predictor_student", JSON.stringify(data.user));
-
-      // Sync active selected college favorite state if open
-      if (selectedCollege) {
-        const updatedSelected = colleges.find(c => c.id === selectedCollege.id);
-        if (updatedSelected) {
-          setSelectedCollege(updatedSelected);
-        }
-      }
     } catch (err: any) {
-      alert("Error synchronizing profile details: " + err.message);
+      console.warn("Backend profile sync deferred, running locally:", err.message);
     }
   };
 
@@ -209,7 +213,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#faf6f0] via-[#fefdfa] to-[#f4eee1] selection:bg-amber-600 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-rose-500 selection:text-white text-slate-900 font-sans overflow-x-hidden">
       {/* Universal header navigation */}
       <Header
         currentUser={currentUser}
@@ -225,10 +229,10 @@ export default function App() {
       {/* Main Content Areas */}
       <main className="flex-grow">
         {loadingColleges ? (
-          <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center">
-            <Loader2 className="h-10 w-10 text-blue-600 animate-spin mb-4" />
-            <h3 className="font-display font-bold text-gray-700">Loading College Database</h3>
-            <p className="text-xs text-gray-400 mt-1">Connecting with secure credentials...</p>
+          <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center space-y-4">
+            <Loader2 className="h-10 w-10 text-rose-500 animate-spin mb-2" />
+            <h3 className="font-display font-black text-xl text-slate-900 tracking-tight">Loading College Database</h3>
+            <p className="text-xs text-slate-400 max-w-xs text-center font-medium">Connecting with secure credentials & setting up your counseling matching platform...</p>
           </div>
         ) : isAdmin ? (
           // Admin Workspace Module

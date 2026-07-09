@@ -108,45 +108,45 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full bg-white border border-gray-100 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-100/50 transition-all duration-300">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
+      <div className="max-w-md w-full backdrop-blur-2xl bg-white/40 bg-gradient-to-br from-pink-100/50 to-rose-100/50 border border-white/60 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-black/40 transition-all duration-300">
         
         {/* Intro */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-blue-50 text-blue-600 rounded-2xl mb-4 shadow-sm">
-            {step === "details" ? <Mail className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7 text-emerald-600" />}
+          <div className="inline-flex p-3 bg-rose-500/10 text-rose-500 rounded-2xl mb-4 shadow-md border border-rose-500/20">
+            {step === "details" ? <Mail className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7 text-emerald-400" />}
           </div>
-          <h2 className="font-display font-extrabold text-2xl sm:text-3xl tracking-tight text-gray-900">
+          <h2 className="font-display font-black text-2xl sm:text-3xl tracking-tight text-slate-900">
             {step === "details" ? "Student Portal" : "Verification Step"}
           </h2>
-          <p className="text-sm text-gray-500 mt-1.5 max-w-xs mx-auto">
+          <p className="text-sm text-slate-600 mt-1.5 max-w-xs mx-auto font-medium">
             {step === "details" 
-              ? "Access your personalized college recommendations." 
+              ? "Access your personalized college matching discovery platform." 
               : "We've generated a secure 6-digit code for your account access."}
           </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-100 text-rose-700 text-xs rounded-xl font-medium animate-in fade-in duration-200">
+          <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/25 text-rose-400 text-xs rounded-xl font-bold animate-in fade-in duration-200">
             {errorMsg}
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs rounded-xl font-medium animate-in fade-in duration-200">
+          <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs rounded-xl font-bold animate-in fade-in duration-200">
             {successMsg}
           </div>
         )}
 
         {step === "details" ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
+          <form onSubmit={handleSendOtp} className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-rose-500/80 uppercase tracking-widest mb-1.5">
                   First Name
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-600 pointer-events-none">
                     <User className="h-4 w-4" />
                   </span>
                   <input
@@ -156,17 +156,17 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder=""
-                    className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50/50 border border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-hidden transition-all"
+                    className="w-full pl-10 pr-4 py-3 text-sm bg-white/60 border border-white/60 rounded-2xl text-slate-900 focus:border-rose-500 focus:bg-white/80 focus:ring-1 focus:ring-rose-500 outline-hidden transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-rose-500/80 uppercase tracking-widest mb-1.5">
                   Last Name
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-600 pointer-events-none">
                     <User className="h-4 w-4" />
                   </span>
                   <input
@@ -176,18 +176,18 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder=""
-                    className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50/50 border border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-hidden transition-all"
+                    className="w-full pl-10 pr-4 py-3 text-sm bg-white/60 border border-white/60 rounded-2xl text-slate-900 focus:border-rose-500 focus:bg-white/80 focus:ring-1 focus:ring-rose-500 outline-hidden transition-all"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-rose-500/80 uppercase tracking-widest mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-600 pointer-events-none">
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
@@ -196,8 +196,8 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="E.g., student@gmail.com"
-                  className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50/50 border border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-hidden transition-all"
+                  placeholder="student@gmail.com"
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-white/60 border border-white/60 rounded-2xl text-slate-900 focus:border-rose-500 focus:bg-white/80 focus:ring-1 focus:ring-rose-500 outline-hidden transition-all placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -206,46 +206,46 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
               id="login-send-otp-btn"
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow-md shadow-blue-100 hover:shadow-lg hover:shadow-blue-200/50 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-wait"
+              className="w-full mt-2 py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-2xl shadow-lg shadow-rose-500/10 hover:shadow-rose-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-wait active:scale-99"
             >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Sending OTP...</span>
+                  <span>Sending Code...</span>
                 </>
               ) : (
                 <>
-                  <span>Send OTP via Gmail</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <span>Send Code via Gmail</span>
+                  <ArrowRight className="h-4 w-4 stroke-[2.5]" />
                 </>
               )}
             </button>
 
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100"></div>
+                <div className="w-full border-t border-white/60"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-400 font-bold tracking-widest">Or</span>
+                <span className="bg-[#0e111d] px-3.5 text-slate-500 font-black tracking-widest">Or</span>
               </div>
             </div>
 
             <button
               type="button"
               onClick={onSkipLogin}
-              className="w-full py-3 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/60 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-99"
             >
               <span>Skip for now</span>
             </button>
           </form>
         ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+          <form onSubmit={handleVerifyOtp} className="space-y-5 animate-in slide-in-from-right-4 duration-300">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 text-center">
+              <label className="block text-xs font-bold text-rose-500/80 uppercase tracking-widest mb-1.5 text-center">
                 Enter 6-Digit OTP Verification Code
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 pointer-events-none">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-600 pointer-events-none">
                   <ShieldCheck className="h-4 w-4" />
                 </span>
                 <input
@@ -256,7 +256,7 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                   placeholder="000000"
-                  className="w-full text-center tracking-widest pl-9 pr-4 py-3 font-mono text-xl bg-gray-50/50 border border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 outline-hidden transition-all"
+                  className="w-full text-center tracking-widest pl-10 pr-4 py-3.5 font-mono text-xl bg-white/60 border border-white/60 rounded-2xl text-slate-900 focus:border-rose-500 focus:bg-white/80 focus:ring-1 focus:ring-rose-500 outline-hidden transition-all"
                 />
               </div>
             </div>
@@ -265,16 +265,16 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
               id="login-verify-otp-btn"
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium shadow-md shadow-emerald-100 hover:shadow-lg hover:shadow-emerald-200/50 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-wait"
+              className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/25 transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-75 disabled:cursor-wait active:scale-99"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
                   <span>Verifying Code...</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="h-4 w-4" />
+                  <ShieldCheck className="h-4 w-4 text-white" />
                   <span>Verify OTP Code</span>
                 </>
               )}
@@ -284,7 +284,7 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
               type="button"
               id="login-back-btn"
               onClick={handleBackToDetails}
-              className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center space-x-1"
+              className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/60 text-slate-300 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center space-x-1.5 active:scale-99"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Change Name or Email</span>

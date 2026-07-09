@@ -2,12 +2,12 @@ import { GoogleGenAI, Type } from "@google/genai";
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createClient } from "@supabase/supabase-js";
+// supabase removed
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { College, StudentProfile, VerificationSession } from "./src/types.js";
+import { College, StudentProfile, VerificationSession } from "./src/types";
 import Groq from "groq-sdk";
-import { KARNATAKA_COLLEGES } from "./src/data/colleges.js";
+import { KARNATAKA_COLLEGES } from "./src/data/colleges";
 
 dotenv.config();
 
@@ -18,22 +18,7 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Initialize Supabase Client
-const supabaseUrl = process.env.SUPABASE_URL || "https://benwwffceoyptlksuhkv.supabase.co";
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "sb_publishable_JC5QiBeK07_8FhK7eVGjBA_L63nOs_Y";
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY || "sb_secret_IRss1H-sscsb1gb_wobC2A_piguWyM7";
-
-let supabase: any = null;
-try {
-  if (supabaseUrl && supabaseSecretKey) {
-    supabase = createClient(supabaseUrl, supabaseSecretKey);
-    console.log("Supabase client initialized with secret key.");
-  }
-} catch (err) {
-  console.error("Failed to initialize Supabase client:", err);
-}
-
-// Local File Store Fallback (Ensures 100% reliability if Supabase tables are not created yet)
+// Internal Static Data File Store (for exactly 200 in-built colleges)
 const DATA_STORE_PATH = process.env.VERCEL ? path.join("/tmp", "data_store.json") : path.join(process.cwd(), "data_store.json");
 const DEFAULT_COLLEGES: College[] = KARNATAKA_COLLEGES;
 
@@ -149,52 +134,14 @@ function mergeCourses(existingCourses: any[], newCourses: any[]): any[] {
 // Database Helpers combining Supabase and Local File fallback
 const db = {
   getColleges: async (): Promise<{ data: College[]; isFallback: boolean }> => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from("colleges").select("*");
-        if (!error && data && data.length > 0) {
-          const mapped = data.map((item: any) => ({
-            id: item.id?.toString() || item.college_id?.toString(),
-            name: item.name || item.college_name,
-            place: item.place,
-            locationAddress: item.location_address ?? item.locationAddress ?? "",
-            website: item.website ?? "",
-            contactNumber: item.contact_number ?? item.contactNumber ?? "",
-            images: Array.isArray(item.images) ? item.images : (() => {
-              try {
-                return JSON.parse(item.images || "[]");
-              } catch (e) {
-                return [];
-              }
-            })(),
-            rating: item.rating,
-            details: item.details || "",
-            courses: Array.isArray(item.courses) ? item.courses : (() => {
-              try {
-                return typeof item.courses === 'string' ? JSON.parse(item.courses) : (item.courses || []);
-              } catch (e) {
-                return [];
-              }
-            })()
-          }));
-          return { data: mapped, isFallback: false };
-        } else if (error) {
-          console.warn("Supabase colleges select failed, falling back to local storage:", error.message);
-        }
-      } catch (err) {
-        console.warn("Error querying Supabase colleges, falling back to local:", err);
-      }
-    }
     const store = readLocalStore();
     return { data: store.colleges, isFallback: true };
   },
 
   saveCollege: async (college: College, overwriteCourses: boolean = false): Promise<{ success: boolean; data: College; supabaseError?: string }> => {
-    // 1. Save to local fallback first
     const store = readLocalStore();
     let index = store.colleges.findIndex((c) => c.id === college.id);
     if (index < 0) {
-      // Fuzzy / substring matching to auto-recognize and match colleges in the database perfectly
       const match = findMatchingCollege(college.name, college.place, store.colleges);
       if (match) {
         index = store.colleges.findIndex((c) => c.id === match.id);
@@ -218,95 +165,23 @@ const db = {
       store.colleges.push(college);
     }
     writeLocalStore(store);
-
-    let supabaseError: string | undefined = undefined;
-
-    // 2. Try saving to Supabase
-    if (supabase) {
-      try {
-        const firstCourse = (college.courses && college.courses.length > 0) ? college.courses[0] : null;
-        const courseNameVal = firstCourse ? firstCourse.courseName : "CSE";
-        const feesVal = firstCourse ? firstCourse.fees : (college.fees || 150000);
-        const avgPkgVal = firstCourse ? firstCourse.averagePackage : (college.averagePackage || 6.5);
-        const maxPkgVal = firstCourse ? firstCourse.highestPackage : (college.highestPackage || 12);
-
-        const payload = {
-          id: college.id,
-          name: college.name,
-          place: college.place,
-          location_address: college.locationAddress || college.place || "",
-          website: college.website,
-          contact_number: college.contactNumber,
-          images: college.images,
-          rating: college.rating || 4.0,
-          details: college.details,
-          courses: college.courses,
-          course: courseNameVal,
-          fees: feesVal,
-          average_package: avgPkgVal,
-          highest_package: maxPkgVal
-        };
-        const { error } = await supabase.from("colleges").upsert(payload, { onConflict: "id" });
-        if (error) {
-          console.warn("Could not upsert college in Supabase, saved to local store:", error.message);
-          supabaseError = error.message;
-        } else {
-          console.log("Upserted college into Supabase successfully.");
-        }
-      } catch (err: any) {
-        console.warn("Supabase upsert error:", err);
-        supabaseError = err.message || String(err);
-      }
-    }
-    return { success: true, data: college, supabaseError };
+    return { success: true, data: college };
   },
 
   deleteCollege: async (id: string): Promise<{ success: boolean }> => {
     const store = readLocalStore();
     store.colleges = store.colleges.filter((c) => c.id !== id);
     writeLocalStore(store);
-
-    if (supabase) {
-      try {
-        const { error } = await supabase.from("colleges").delete().eq("id", id);
-        if (error) {
-          console.warn("Could not delete college from Supabase, deleted locally:", error.message);
-        }
-      } catch (err) {
-        console.warn("Supabase delete error:", err);
-      }
-    }
     return { success: true };
   },
 
   getUser: async (email: string): Promise<StudentProfile | null> => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.from("users").select("*").eq("email", email.toLowerCase()).single();
-        if (!error && data) {
-          return {
-            email: data.email,
-            firstName: data.first_name ?? data.firstName,
-            lastName: data.last_name ?? data.lastName,
-            cetRank: data.cet_rank ?? data.cetRank,
-            dcetScore: data.dcet_score ?? data.dcetScore,
-            examScore: data.exam_score ?? data.examScore,
-            courses: Array.isArray(data.courses) ? data.courses : JSON.parse(data.courses || "[]"),
-            favorites: Array.isArray(data.favorites) ? data.favorites : JSON.parse(data.favorites || "[]"),
-            isVerified: data.is_verified ?? data.isVerified ?? false
-          };
-        }
-      } catch (err) {
-        console.warn("Supabase get user failed, checking local:", err);
-      }
-    }
     const store = readLocalStore();
     const user = store.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     return user || null;
   },
 
   saveUser: async (profile: StudentProfile): Promise<StudentProfile> => {
-    // 1. Save to local fallback first
     const store = readLocalStore();
     const index = store.users.findIndex((u) => u.email.toLowerCase() === profile.email.toLowerCase());
     if (index >= 0) {
@@ -315,31 +190,6 @@ const db = {
       store.users.push(profile);
     }
     writeLocalStore(store);
-
-    // 2. Try saving to Supabase
-    if (supabase) {
-      try {
-        const payload = {
-          email: profile.email.toLowerCase(),
-          first_name: profile.firstName,
-          last_name: profile.lastName,
-          cet_rank: profile.cetRank,
-          dcet_score: profile.dcetScore,
-          exam_score: profile.examScore,
-          courses: profile.courses,
-          favorites: profile.favorites,
-          is_verified: profile.isVerified
-        };
-        const { error } = await supabase.from("users").upsert(payload, { onConflict: "email" });
-        if (error) {
-          console.warn("Could not upsert user in Supabase, saved to local store:", error.message);
-        } else {
-          console.log("Upserted user into Supabase successfully.");
-        }
-      } catch (err) {
-        console.warn("Supabase user upsert error:", err);
-      }
-    }
     return profile;
   },
 
@@ -350,47 +200,9 @@ const db = {
     );
     store.verificationSessions.push(session);
     writeLocalStore(store);
-
-    if (supabase) {
-      try {
-        const payload = {
-          email: session.email.toLowerCase(),
-          first_name: session.firstName,
-          last_name: session.lastName,
-          otp: session.otp,
-          expires_at: session.expiresAt
-        };
-        const { error } = await supabase.from("verification_sessions").upsert(payload, { onConflict: "email" });
-        if (error) {
-          console.warn("Could not upsert verification session in Supabase:", error.message);
-        }
-      } catch (err) {
-        console.warn("Supabase verification session upsert error:", err);
-      }
-    }
   },
 
   getVerificationSession: async (email: string): Promise<VerificationSession | null> => {
-    if (supabase) {
-      try {
-        const { data, error } = await supabase
-          .from("verification_sessions")
-          .select("*")
-          .eq("email", email.toLowerCase())
-          .single();
-        if (!error && data) {
-          return {
-            email: data.email,
-            firstName: data.first_name ?? data.firstName,
-            lastName: data.last_name ?? data.lastName,
-            otp: data.otp,
-            expiresAt: Number(data.expires_at ?? data.expiresAt)
-          };
-        }
-      } catch (err) {
-        console.warn("Supabase get verification session failed, checking local:", err);
-      }
-    }
     const store = readLocalStore();
     const session = store.verificationSessions.find((s) => s.email.toLowerCase() === email.toLowerCase());
     return session || null;
@@ -605,7 +417,24 @@ app.get("/api/colleges", async (req, res) => {
 });
 
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai: any = null;
+function getGeminiClient(): any {
+  if (!ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is required.");
+    }
+    ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return ai;
+}
 
 app.post("/api/colleges/ai-refine", async (req, res) => {
   const { adminCode, college } = req.body;
@@ -624,7 +453,7 @@ For the images array: if the input images are valid, high-quality, or real campu
 
 Input: ${JSON.stringify(college)}`;
 
-    const response = await ai.models.generateContent({
+    const response = await getGeminiClient().models.generateContent({
       model: "gemini-3.5-flash",
       contents: prompt,
       config: {
@@ -929,17 +758,13 @@ app.post("/api/admin/sync-database", async (req, res) => {
   try {
     const store = readLocalStore();
     let syncedCount = 0;
-    let lastSupabaseError: string | null = null;
     
     for (const college of store.colleges) {
-      const result = await db.saveCollege(college);
+      await db.saveCollege(college);
       syncedCount++;
-      if (result.supabaseError) {
-        lastSupabaseError = result.supabaseError;
-      }
     }
 
-    res.json({ success: true, syncedCount, supabaseError: lastSupabaseError });
+    res.json({ success: true, syncedCount });
   } catch (err: any) {
     res.status(500).json({ error: "Sync failed: " + err.message });
   }
@@ -1278,7 +1103,7 @@ Ensure all courses are properly structured.
         }
         
         let updatedCount = 0;
-        let lastSupabaseError: string | null = null;
+        
         for (const clg of imported) {
            const saveRes = await db.saveCollege({
              id: "clg_csv_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
@@ -1294,12 +1119,9 @@ Ensure all courses are properly structured.
                ""
              ]
            } as College);
-           if (saveRes.supabaseError) {
-             lastSupabaseError = saveRes.supabaseError;
-           }
            updatedCount++;
         }
-        return res.json({ success: true, updatedCount, supabaseError: lastSupabaseError });
+        return res.json({ success: true, updatedCount });
       }
     }
 
@@ -1352,7 +1174,7 @@ Ensure all courses are properly structured.
     const finalArray = Array.isArray(parsedData) ? parsedData : (parsedData.colleges || []);
 
     let updatedCount = 0;
-    let lastSupabaseError: string | null = null;
+    
     for (const scrapedClg of finalArray) {
       let collegeToSave: College;
       const matched = scrapedClg.id ? store.colleges.find(c => c.id === scrapedClg.id) : null;
@@ -1386,13 +1208,10 @@ Ensure all courses are properly structured.
       }
       
       const saveRes = await db.saveCollege(collegeToSave);
-      if (saveRes.supabaseError) {
-        lastSupabaseError = saveRes.supabaseError;
-      }
       updatedCount++;
     }
 
-    res.json({ success: true, updatedCount, supabaseError: lastSupabaseError });
+    res.json({ success: true, updatedCount });
   } catch (error) {
     console.error("Smart upload error:", error);
     res.status(500).json({ error: error.message });
@@ -1528,27 +1347,7 @@ if (process.env.NODE_ENV !== "production") {
   }
 }
 
-// Seed Database on Startup
-async function seedDatabase() {
-  if (!supabase) return;
-  
-  try {
-    const { count, error } = await supabase.from("colleges").select("*", { count: "exact", head: true });
-    if (!error && (count === 0 || count === null)) {
-      console.log("Seeding Supabase with default Karnataka colleges...");
-      for (const college of DEFAULT_COLLEGES) {
-        await db.saveCollege(college);
-      }
-      console.log("Seeding complete.");
-    }
-  } catch (err) {
-    console.warn("Database seeding check failed:", err);
-  }
-}
-
-if (process.env.NODE_ENV !== "production") {
-  seedDatabase();
-}
+// Seed logic removed, we use local JSON which is initialized on startup.
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, "0.0.0.0", () => {

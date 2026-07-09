@@ -75,7 +75,10 @@ export default function AdminPortal({
   }, []);
 
   const handleExportStudentsCSV = () => {
-    if (students.length === 0) return alert("No students available.");
+    if (students.length === 0) {
+      setErrorMsg("No student records available to export.");
+      return;
+    }
     const headers = ["Email", "First Name", "Last Name", "Verified", "CET Rank", "DCET Score"];
     const rows = students.map(s => [
       s.email,
@@ -93,6 +96,7 @@ export default function AdminPortal({
     a.download = "students_export.csv";
     a.click();
     URL.revokeObjectURL(url);
+    setSuccessMsg("Students CSV exported successfully.");
   };
 
   const handleExportTotalDatabase = () => {
@@ -104,7 +108,10 @@ export default function AdminPortal({
     try {
       // Create HTML table and print it, as jspdf is available but we can do a quick window.print for the students table
       const printWindow = window.open("", "_blank");
-      if (!printWindow) return alert("Pop-ups blocked");
+      if (!printWindow) {
+        setErrorMsg("Failed to open print window. Please allow popups for this site.");
+        return;
+      }
       printWindow.document.write("<html><head><title>Students Export</title><style>table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid black; padding: 8px; text-align: left; }</style></head><body>");
       printWindow.document.write("<h2>Students Database</h2><table><tr><th>Email</th><th>Name</th><th>Verified</th><th>CET Rank</th></tr>");
       students.forEach(s => {
@@ -114,7 +121,7 @@ export default function AdminPortal({
       printWindow.document.close();
       printWindow.print();
     } catch (e) {
-      alert("Failed to export PDF");
+      setErrorMsg("Failed to export PDF format.");
     }
   };
 
@@ -801,7 +808,7 @@ export default function AdminPortal({
 
   const copySqlToClipboard = () => {
     navigator.clipboard.writeText(sqlContent);
-    alert("Supabase table creation SQL scripts copied to clipboard!");
+    setSuccessMsg("Supabase table creation SQL scripts copied to clipboard!");
   };
 
   // Filter colleges inside administration panel
