@@ -704,7 +704,7 @@ export default function StudentDashboard({
                       animate={{ opacity: 1, scale: 1, x: 0 }}
                       exit={{ opacity: 0, scale: 0.9, x: -100 }}
                       transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    drag="true"
+                    drag={true}
                     dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                     onDragEnd={(e, { offset, velocity }) => {
                       // Horizontal Swipes (80-90% threshold for action)

@@ -216,7 +216,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-rose-500 selection:text-white text-slate-900 font-sans overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-rose-50 via-white to-pink-50 selection:bg-rose-500 selection:text-white text-slate-900 font-sans overflow-x-hidden">
       {/* Main Content Areas */}
       <main className="flex-grow">
         {loadingColleges ? (

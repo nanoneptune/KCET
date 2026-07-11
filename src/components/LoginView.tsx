@@ -108,7 +108,7 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-rose-50 via-white to-pink-50">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-rose-50 via-white to-pink-50">
       <div className="max-w-md w-full glass rounded-[3rem] p-8 sm:p-12 shadow-[0_32px_64px_-16px_rgba(244,63,94,0.1)] transition-all duration-500 animate-in fade-in zoom-in duration-700">
         
         {/* Intro */}
