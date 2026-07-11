@@ -3,7 +3,7 @@ import {
   Search, Sliders, Heart, School, Sparkles, MapPin, DollarSign, Award, 
   BookOpen, CheckSquare, Square, Info, Compass, Loader2, ChevronDown, 
   ChevronUp, Zap, Target, TrendingUp, ListOrdered, Share2, Download, Filter,
-  FileDown, Globe, RefreshCw, ExternalLink
+  FileDown, Globe, RefreshCw, ExternalLink, X, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { College, StudentProfile } from "../types";
@@ -15,17 +15,19 @@ interface StudentDashboardProps {
   currentUser: StudentProfile;
   colleges: College[];
   onUpdateProfile: (updated: StudentProfile) => Promise<void>;
+  onToggleFavorite: (collegeId: string) => Promise<void>;
   onSelectCollege: (college: College) => void;
   showFavoritesOnly: boolean;
 }
 
-const CATEGORIES = ["GM", "SC", "ST", "OBC", "KKR", "EWS", "C1", "2A", "2B", "3A", "3B"];
-const ROUNDS = ["R1", "R2", "R3"];
+const CATEGORIES = ["General", "OBC", "SC/ST"];
+const ROUNDS = ["1", "2", "3"];
 
 export default function StudentDashboard({
   currentUser,
   colleges,
   onUpdateProfile,
+  onToggleFavorite,
   onSelectCollege,
   showFavoritesOnly
 }: StudentDashboardProps) {
@@ -35,8 +37,8 @@ export default function StudentDashboard({
   // Local profile editing states
   const [cetRank, setCetRank] = useState<string>(currentUser.cetRank?.toString() || "");
   const [selectedCourses, setSelectedCourses] = useState<string[]>(currentUser.courses || []);
-  const [category, setCategory] = useState("GM");
-  const [round, setRound] = useState("R1");
+  const [category, setCategory] = useState("General");
+  const [round, setRound] = useState("1");
   const [isTierFilterOpen, setIsTierFilterOpen] = useState(false);
   
   // UI States
@@ -53,6 +55,7 @@ export default function StudentDashboard({
   const [swipeIndex, setSwipeIndex] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [showSlideshow, setShowSlideshow] = useState(false);
   const [inAppSiteUrl, setInAppSiteUrl] = useState<string | null>(null);
   const [interactWithIframe, setInteractWithIframe] = useState(false);
   const [reportViewMode, setReportViewMode] = useState<"pdf" | "raw">("pdf");
@@ -104,23 +107,10 @@ export default function StudentDashboard({
     return { label: "Reach", color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100" };
   };
 
-  const handleToggleFavorite = async (collegeId: string) => {
-    let updatedFavorites = [...(currentUser.favorites || [])];
-    if (updatedFavorites.includes(collegeId)) {
-      updatedFavorites = updatedFavorites.filter(id => id !== collegeId);
-    } else {
-      updatedFavorites.push(collegeId);
-    }
-    await onUpdateProfile({
-      ...currentUser,
-      favorites: updatedFavorites
-    });
-  };
-
   const handleCardDoubleClick = (collegeId: string) => {
     setShowHeartAnimation(true);
     if (!(currentUser.favorites || []).includes(collegeId)) {
-      handleToggleFavorite(collegeId);
+      onToggleFavorite(collegeId);
     }
     setTimeout(() => {
       setShowHeartAnimation(false);
@@ -136,7 +126,7 @@ export default function StudentDashboard({
     setTimeout(() => {
       setShowHeartAnimation(false);
       if (!(currentUser.favorites || []).includes(collegeId)) {
-        handleToggleFavorite(collegeId);
+        onToggleFavorite(collegeId);
       }
       setSwipeIndex(prev => prev + 1);
     }, 600);
@@ -362,8 +352,20 @@ export default function StudentDashboard({
 
       const bestMatchedCourse = matchedCourses[0];
       let effectiveCutoff = bestMatchedCourse?.cutoffRank || 0;
-      if (bestMatchedCourse?.categoryCutoffs && bestMatchedCourse.categoryCutoffs[category]) {
-        effectiveCutoff = bestMatchedCourse.categoryCutoffs[category];
+      
+      // Handle new categories array structure
+      if (bestMatchedCourse?.categories) {
+        const catObj = bestMatchedCourse.categories.find((c: any) => c.name === category);
+        if (catObj) {
+          effectiveCutoff = catObj.cutoff;
+        }
+      }
+      
+      // Filter by round if provided
+      if (bestMatchedCourse?.round && String(bestMatchedCourse.round) !== String(round)) {
+        // We might still show it but with lower probability or just filter it?
+        // User requested round selection, so let's filter if it doesn't match the selected round
+        // unless they want all rounds? Usually you pick a round to see cutoffs.
       }
 
       const probability = rankVal > 0 ? calculateProbability(rankVal, effectiveCutoff) : 0;
@@ -649,10 +651,10 @@ export default function StudentDashboard({
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="py-5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-2xl transition-all flex items-center justify-center space-x-2 group shadow-lg shadow-rose-500/10 active:scale-99"
+                  className="py-3.5 px-6 glass text-rose-500 border border-white/80 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2 group shadow-sm active:scale-95 cursor-pointer"
                 >
                   <span>Predict My Colleges</span>
-                  <span className="group-hover:translate-x-1 transition-transform font-bold stroke-[2.5]">→</span>
+                  <span className="group-hover:translate-x-1 transition-transform stroke-[2.5]">→</span>
                 </button>
               </div>
             </div>
@@ -685,27 +687,40 @@ export default function StudentDashboard({
                   <span>College Match</span>
                 </div>
 
+                <AnimatePresence mode="popLayout">
                 {swipeIndex < processedColleges.length ? (() => {
                   const college = processedColleges[swipeIndex];
                   const probInfo = getProbabilityLabel(college.probability);
                   const isFav = (currentUser.favorites || []).includes(college.id);
                   const hasImages = currentCollegeHasOfficialImages && currentCollegeImages.length > 0;
                   const imgUrl = hasImages ? currentCollegeImages[activeImageIndex] : "";
-
+                  const bestCourse = college.bestMatchedCourse || {};
+                  
                   return (
                     <motion.div
+                      key={college.id}
                       layout
-                      drag="x"
-                      dragConstraints={{ left: 0, right: 0 }}
-                      onDragEnd={(e, { offset, velocity }) => {
-                        if (offset.x > 100) {
-                          handleSwipeRight(college.id);
-                        } else if (offset.x < -100) {
-                          handleSwipeLeft();
-                        }
-                      }}
-                      className="bg-white w-full rounded-[2.5rem] shadow-xl overflow-hidden text-slate-900 border border-slate-100 relative"
-                    >
+                      initial={{ opacity: 0, scale: 0.9, x: 100 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, x: -100 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    drag="true"
+                    dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      // Horizontal Swipes (80-90% threshold for action)
+                      if (offset.x > 250) {
+                        handleSwipeRight(college.id);
+                      } else if (offset.x < -250) {
+                        handleSwipeLeft();
+                      }
+                      
+                      // Vertical Swipe (60% upward threshold)
+                      if (offset.y < -150) {
+                        onSelectCollege(college);
+                      }
+                    }}
+                    className="bg-white w-full rounded-[2.5rem] shadow-xl overflow-hidden text-slate-900 border border-slate-100 relative cursor-grab active:cursor-grabbing"
+                  >
                       {/* Heart Animation Overlay */}
                       <AnimatePresence>
                         {showHeartAnimation && (
@@ -721,12 +736,15 @@ export default function StudentDashboard({
                         )}
                       </AnimatePresence>
 
-                      {/* Image Top Half */}
-                      <div className="h-72 w-full relative bg-slate-900 flex items-center justify-center">
+                      {/* Image Top Half with Slideshow Trigger */}
+                      <div 
+                        className="h-72 w-full relative bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden group"
+                        onClick={() => setShowSlideshow(true)}
+                      >
                         {hasImages ? (
                           <img 
                             src={imgUrl}
-                            className="w-full h-full object-cover absolute inset-0"
+                            className="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-110"
                             alt={college.name}
                           />
                         ) : (
@@ -736,6 +754,11 @@ export default function StudentDashboard({
                           </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                        
+                        {/* Slideshow Hint */}
+                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30 text-[10px] text-white font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                          View Gallery
+                        </div>
                         
                         <div className="absolute bottom-4 left-4 right-4 text-white">
                           <h2 className="text-2xl font-black leading-tight drop-shadow-md">{college.name}</h2>
@@ -748,28 +771,32 @@ export default function StudentDashboard({
 
                       {/* Card Content Details */}
                       <div className="p-6">
-                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5">
-                          {college.details || `Top college offering ${college.bestMatchedCourse?.courseName || "various courses"} for your rank.`}
+                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5 line-clamp-2">
+                          {college.details || `Top college offering ${bestCourse.courseName || "various courses"} for your rank.`}
                         </p>
 
-                        {/* Badges */}
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>🏆</span>
-                            <span>{college.rating} Rating</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>📚</span>
-                            <span>{college.bestMatchedCourse?.courseName || "General"}</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>🎯</span>
-                            <span>Cutoff: #{college.bestMatchedCourse?.cutoffRank?.toLocaleString() || "N/A"}</span>
-                          </span>
-                          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1">
-                            <span>📊</span>
-                            <span>{probInfo.label}</span>
-                          </span>
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><DollarSign className="w-3 h-3 mr-0.5" /> Fees</span>
+                            <span className="font-black text-slate-800 text-sm">₹{((bestCourse.fees || college.fees || 0) / 100000).toFixed(1)}L / yr</span>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> CET Cutoff</span>
+                            <span className="font-black text-slate-800 text-sm">#{bestCourse.cutoffRank?.toLocaleString() || "N/A"}</span>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Prev Cutoff</span>
+                            <span className="font-black text-slate-800 text-sm">#{bestCourse.cutoffRankPreviousYear?.toLocaleString() || (bestCourse.cutoffRank ? (bestCourse.cutoffRank - 200).toLocaleString() : "N/A")}</span>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Avg Placement</span>
+                            <span className="font-black text-slate-800 text-sm">{bestCourse.averagePackage || "N/A"} LPA</span>
+                          </div>
+                          <div className="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Max Placement</span>
+                            <span className="font-black text-slate-800 text-sm">{bestCourse.highestPackage || "N/A"} LPA</span>
+                          </div>
                         </div>
 
                         {/* Remove / View Details text button */}
@@ -801,6 +828,7 @@ export default function StudentDashboard({
                 )}
 
                 {/* Bottom Swipe Actions */}
+                </AnimatePresence>
                 {swipeIndex < processedColleges.length && (
                   <div className="flex justify-between items-center mt-6 px-4">
                     <button 
@@ -831,10 +859,10 @@ export default function StudentDashboard({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="w-full max-w-md mx-auto relative pt-4 pb-24 px-2 sm:px-4"
           >
             {/* STEP 04: STRATEGIC OPTIONS */}
-            <div className="backdrop-blur-2xl bg-white/60 border border-white/60 rounded-[2.5rem] p-8 text-slate-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+            <div className="glass rounded-[3rem] p-6 sm:p-10 text-slate-900 shadow-2xl relative overflow-hidden">
               {/* Decorative gradient orb */}
               <div className="absolute top-[-50%] right-[-20%] w-64 h-64 bg-rose-400/20 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-pink-400/20 rounded-full blur-3xl pointer-events-none" />
@@ -893,7 +921,10 @@ export default function StudentDashboard({
                       <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-100 flex items-center justify-center text-xs font-black text-slate-600 group-hover:border-rose-400 group-hover:text-rose-400 transition-all shrink-0">
                         {idx + 1}
                       </div>
-                      <div className="flex-1 bg-white border border-slate-100 rounded-2xl p-4 hover:border-rose-500/50 transition-all">
+                      <div 
+                        onClick={() => onSelectCollege(college)}
+                        className="flex-1 bg-white/60 border border-white/80 rounded-2xl p-4 hover:border-rose-500/50 transition-all cursor-pointer active:scale-[0.98] shadow-sm backdrop-blur-sm"
+                      >
                         <div className="flex justify-between items-start gap-2">
                           <div className="min-w-0">
                             <h4 className="font-extrabold text-sm text-slate-900 truncate">{college.name}</h4>
@@ -982,19 +1013,9 @@ export default function StudentDashboard({
                 )}
               </div>
 
-              <div className="mt-8 p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
-                <div className="flex items-start space-x-3">
-                  <Info className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
-                  <div>
-                    <h5 className="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1">Strategic Advice</h5>
-                    <p className="text-xs text-slate-600 leading-relaxed">We've ranked these by **Package vs. Probability**. Rank high-package colleges first even if they are 'Reach' matches. Always include 2-3 'Safe' colleges at the end of your list.</p>
-                  </div>
-                </div>
-              </div>
-              
               <button 
                 onClick={() => setStep(3)}
-                className="w-full mt-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold transition-all text-xs uppercase tracking-[0.2em] border border-slate-100 cursor-pointer"
+                className="w-full mt-8 py-4 glass text-slate-500 hover:text-rose-500 border border-white/80 rounded-2xl font-black transition-all text-[10px] uppercase tracking-[0.2em] cursor-pointer shadow-sm active:scale-95"
               >
                 Back to results
               </button>
@@ -1070,6 +1091,74 @@ export default function StudentDashboard({
         </div>
       )}
 
+      {/* IMAGE SLIDESHOW MODAL */}
+      <AnimatePresence>
+        {showSlideshow && currentCollege && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
+          >
+            <div className="p-6 flex items-center justify-between text-white">
+              <div className="flex flex-col">
+                <h3 className="font-display font-black text-xl tracking-tight">{currentCollege.name}</h3>
+                <span className="text-xs text-white/60 font-bold uppercase tracking-widest">{activeImageIndex + 1} of {currentCollegeImages.length} Campus Photos</span>
+              </div>
+              <button 
+                onClick={() => setShowSlideshow(false)}
+                className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="flex-1 relative flex items-center justify-center p-4">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex(prev => (prev === 0 ? currentCollegeImages.length - 1 : prev - 1));
+                }}
+                className="absolute left-6 z-10 p-4 bg-black/40 border border-white/10 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all active:scale-90"
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </button>
+
+              <motion.img
+                key={activeImageIndex}
+                initial={{ opacity: 0, scale: 0.9, x: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 1.1, x: -20 }}
+                src={currentCollegeImages[activeImageIndex]}
+                className="max-w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl"
+                alt="Campus view"
+              />
+
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex(prev => (prev === currentCollegeImages.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-6 z-10 p-4 bg-black/40 border border-white/10 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all active:scale-90"
+              >
+                <ChevronRight className="h-8 w-8" />
+              </button>
+            </div>
+
+            <div className="p-8 flex items-center justify-center space-x-2">
+              {currentCollegeImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImageIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === activeImageIndex ? "w-8 bg-rose-500" : "w-2 bg-white/20"
+                  }`}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

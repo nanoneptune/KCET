@@ -108,21 +108,19 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
-      <div className="max-w-md w-full backdrop-blur-2xl bg-white/40 bg-gradient-to-br from-pink-100/50 to-rose-100/50 border border-white/60 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl shadow-black/40 transition-all duration-300">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-rose-50 via-white to-pink-50">
+      <div className="max-w-md w-full glass rounded-[3rem] p-8 sm:p-12 shadow-[0_32px_64px_-16px_rgba(244,63,94,0.1)] transition-all duration-500 animate-in fade-in zoom-in duration-700">
         
         {/* Intro */}
-        <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-rose-500/10 text-rose-500 rounded-2xl mb-4 shadow-md border border-rose-500/20">
-            {step === "details" ? <Mail className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7 text-emerald-400" />}
+        <div className="text-center mb-10">
+          <div className="inline-flex p-4 bg-rose-500/10 text-rose-500 rounded-3xl mb-6 shadow-sm border border-rose-500/10">
+            {step === "details" ? <Mail className="h-8 w-8" /> : <ShieldCheck className="h-8 w-8 text-emerald-500" />}
           </div>
-          <h2 className="font-display font-black text-2xl sm:text-3xl tracking-tight text-slate-900">
-            {step === "details" ? "Student Portal" : "Verification Step"}
+          <h2 className="font-display font-black text-3xl sm:text-4xl tracking-tight text-slate-900 mb-2">
+            {step === "details" ? "Student Portal" : "Security Check"}
           </h2>
-          <p className="text-sm text-slate-600 mt-1.5 max-w-xs mx-auto font-medium">
-            {step === "details" 
-              ? "Access your personalized college matching discovery platform." 
-              : "We've generated a secure 6-digit code for your account access."}
+          <p className="text-slate-500 text-sm font-medium">
+            {step === "details" ? "Enter your credentials to match colleges" : "Verify your identity with the OTP"}
           </p>
         </div>
 
@@ -226,16 +224,16 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
                 <div className="w-full border-t border-white/60"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#0e111d] px-3.5 text-slate-500 font-black tracking-widest">Or</span>
+                <span className="bg-white/80 px-3.5 text-slate-500 font-black tracking-widest">Or</span>
               </div>
             </div>
 
             <button
               type="button"
               onClick={onSkipLogin}
-              className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/60 rounded-2xl font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-99"
+              className="w-full py-4 bg-white/40 hover:bg-white/60 text-rose-500 border border-white/80 rounded-2xl font-black text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.98] backdrop-blur-sm shadow-sm"
             >
-              <span>Skip for now</span>
+              <span>Explore as Guest</span>
             </button>
           </form>
         ) : (
@@ -284,7 +282,7 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
               type="button"
               id="login-back-btn"
               onClick={handleBackToDetails}
-              className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/60 text-slate-300 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center space-x-1.5 active:scale-99"
+              className="w-full py-3 bg-white/60 hover:bg-white/80 border border-white/60 text-rose-500 rounded-2xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center space-x-1.5 active:scale-99"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Change Name or Email</span>

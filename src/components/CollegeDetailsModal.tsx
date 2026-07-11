@@ -172,7 +172,14 @@ export default function CollegeDetailsModal({
                     <tr key={idx} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3 font-semibold text-gray-900">{course.courseName}</td>
                       <td className="px-4 py-3 font-medium text-emerald-700">₹{course.fees?.toLocaleString() || "0"}</td>
-                      <td className="px-4 py-3 font-mono font-medium text-blue-600">{course.cutoffRank}{course.categoryCutoffs && Object.keys(course.categoryCutoffs).length > 0 ? <div className="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">{Object.entries(course.categoryCutoffs).map(([k,v]) => `${k}:${v}`).join(", ")}</div> : null}</td>
+                      <td className="px-4 py-3 font-mono font-medium text-blue-600">
+                        {course.cutoffRank}
+                        {course.categories && course.categories.length > 0 ? (
+                          <div className="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">
+                            {course.categories.map(c => `${c.name}:${c.cutoff}`).join(", ")}
+                          </div>
+                        ) : null}
+                      </td>
                       <td className="px-4 py-3 font-mono text-gray-500">{course.cutoffRankPreviousYear || "N/A"}</td>
                       <td className="px-4 py-3 font-mono font-medium text-gray-800">{course.averagePackage} LPA</td>
                       <td className="px-4 py-3 font-mono font-bold text-slate-800">{course.highestPackage} LPA</td>

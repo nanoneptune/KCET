@@ -5,7 +5,11 @@ export interface CollegeCourse {
   fees: number; // in INR (College Fees)
   cutoffRank: number;
   cutoffRankPreviousYear?: number;
-  categoryCutoffs?: Record<string, number>; // e.g., { "GM": 5000, "SC": 12000, "KKR": 8000 }
+  round: number; // e.g. Round 1, Round 2
+  categories: {
+    name: string;
+    cutoff: number;
+  }[]; // Three categories as requested
 }
 
 export interface College {

@@ -59,20 +59,15 @@ export default function Header({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo & Title */}
           <div className="flex items-center space-x-3">
-            <button
-              id="header-logo-btn"
-              onClick={handleLogoClick}
-              title="Click for Admin Portal"
-              className="flex items-center justify-center p-1 hover:opacity-95 transition-all active:scale-95 duration-200 cursor-pointer group"
-            >
+            <div className="flex items-center justify-center p-1 cursor-default">
               <img 
                 src="https://res.cloudinary.com/dkvdbgijn/image/upload/v1783318134/education_tvpscl.png" 
                 alt="Logo" 
-                className="h-10 w-10 object-contain transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+                className="h-10 w-10 object-contain"
               />
-            </button>
+            </div>
             <div className="flex flex-col">
-              <span className="font-display font-black text-lg tracking-wider text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+              <span className="font-display font-black text-lg tracking-wider text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.9)]">
                 CET TO COLLEGE
               </span>
               <span className="text-[9px] text-rose-300/60 font-mono tracking-widest uppercase font-bold">

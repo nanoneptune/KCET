@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import Header from "./components/Header";
+import { supabase } from "./lib/supabase";
 import LoginView from "./components/LoginView";
 import StudentDashboard from "./components/StudentDashboard";
 import AdminPortal from "./components/AdminPortal";
 import CollegeDetailsModal from "./components/CollegeDetailsModal";
 import { College, StudentProfile } from "./types";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, ShieldAlert, Heart, LogOut } from "lucide-react";
 
 export default function App() {
   // Session states
@@ -21,8 +21,16 @@ export default function App() {
   // Dialog details modal state
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
 
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+  const [showPinEntry, setShowPinEntry] = useState(false);
+
   // Load user session and colleges list on mount
   useEffect(() => {
+    // Check for /admin path
+    if (window.location.pathname === "/admin") {
+      setShowPinEntry(true);
+    }
     // 1. Recover Session from localStorage
     const savedSession = localStorage.getItem("predictor_student");
     if (savedSession && savedSession !== "undefined") {
@@ -47,19 +55,17 @@ export default function App() {
   const fetchColleges = async () => {
     setLoadingColleges(true);
     try {
-      const res = await fetch("/api/colleges");
+      const { data, error } = await supabase
+        .from('colleges')
+        .select('*');
       
-      const contentType = res.headers.get("content-type");
-      if (!res.ok || !contentType || !contentType.includes("application/json")) {
-        const text = await res.text();
-        throw new Error(`Server returned ${res.status}. Expected JSON, got: ${text.substring(0, 40)}... Make sure the Node backend is running (not just static frontend).`);
-      }
-
-      const data = await res.json();
-      setColleges(data.colleges || []);
-      setIsFallbackMode(data.isFallback ?? false);
+      if (error) throw error;
+      setColleges(data || []);
+      setIsFallbackMode(false);
     } catch (err: any) {
-      console.error("Network error fetching colleges database:", err);
+      console.error("Supabase error fetching colleges:", err);
+      // Fallback to local data if needed, but the user requested fresh start
+      setColleges([]);
     } finally {
       setLoadingColleges(false);
     }
@@ -149,34 +155,31 @@ export default function App() {
 
   // Admin Actions: Save/Update College record
   const handleAddCollege = async (college: College, isEditing?: boolean) => {
-    const res = await fetch("/api/colleges", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        adminCode: "831067",
-        college,
-        overwriteCourses: !!isEditing
-      })
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
-    // Refresh directory list
-    await fetchColleges();
+    try {
+      const { error } = await supabase
+        .from('colleges')
+        .upsert(college);
+      
+      if (error) throw error;
+      await fetchColleges();
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
   };
 
   // Admin Actions: Delete College record
   const handleDeleteCollege = async (id: string) => {
-    const res = await fetch(`/api/colleges/${id}?adminCode=831067`, {
-      method: "DELETE"
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
-    // Refresh directory list
-    await fetchColleges();
+    try {
+      const { error } = await supabase
+        .from('colleges')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      await fetchColleges();
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
   };
 
   // Admin Actions: CSV Bulk Import overwrites/adds colleges
@@ -213,26 +216,47 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-rose-500 selection:text-white text-slate-900 font-sans overflow-x-hidden">
-      {/* Universal header navigation */}
-      <Header
-        currentUser={currentUser}
-        isAdmin={isAdmin}
-        onAdminAccess={handleAdminAccess}
-        onExitAdmin={handleExitAdmin}
-        onLogout={handleLogout}
-        favoritesCount={currentUser?.favorites?.length || 0}
-        onToggleShowFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
-        showFavoritesOnly={showFavoritesOnly}
-      />
-
+    <div className="min-h-screen flex flex-col selection:bg-rose-500 selection:text-white text-slate-900 font-sans overflow-x-hidden">
       {/* Main Content Areas */}
       <main className="flex-grow">
         {loadingColleges ? (
-          <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center space-y-4">
+          <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
             <Loader2 className="h-10 w-10 text-rose-500 animate-spin mb-2" />
             <h3 className="font-display font-black text-xl text-slate-900 tracking-tight">Loading College Database</h3>
             <p className="text-xs text-slate-400 max-w-xs text-center font-medium">Connecting with secure credentials & setting up your counseling matching platform...</p>
+          </div>
+        ) : showPinEntry ? (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="glass p-10 rounded-[3rem] shadow-2xl max-w-sm w-full text-center">
+              <ShieldAlert className="h-16 w-16 text-rose-500 mx-auto mb-6" />
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Admin Security</h2>
+              <p className="text-sm text-slate-500 mb-8 font-medium">Please enter your 6-digit access PIN to manage the registry.</p>
+              <input
+                type="password"
+                maxLength={6}
+                value={adminPin}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setAdminPin(val);
+                  if (val === "831067") {
+                    setIsAdmin(true);
+                    setShowPinEntry(false);
+                    setAdminPin("");
+                  }
+                }}
+                placeholder="••••••"
+                className="w-full text-center text-4xl tracking-[0.5em] font-mono py-4 bg-white/40 border border-white/60 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all mb-4"
+              />
+              <button 
+                onClick={() => {
+                  setShowPinEntry(false);
+                  window.history.pushState({}, "", "/");
+                }}
+                className="text-xs font-black text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-all cursor-pointer"
+              >
+                Go back to student portal
+              </button>
+            </div>
           </div>
         ) : isAdmin ? (
           // Admin Workspace Module
@@ -240,18 +264,47 @@ export default function App() {
             colleges={colleges}
             onAddCollege={handleAddCollege}
             onDeleteCollege={handleDeleteCollege}
-            onImportColleges={handleImportColleges}
-            isFallback={isFallbackMode}
           />
         ) : currentUser ? (
-          // Student Matched Workspace Module
-          <StudentDashboard
-            currentUser={currentUser}
-            colleges={colleges}
-            onUpdateProfile={handleUpdateProfile}
-            onSelectCollege={setSelectedCollege}
-            showFavoritesOnly={showFavoritesOnly}
-          />
+          <>
+            {/* Minimalist Floating Controls */}
+            <div className="fixed top-6 left-6 z-[100] flex items-center space-x-3 pointer-events-auto">
+              <button
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`p-3 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer ${
+                  showFavoritesOnly ? "bg-rose-500 text-white" : "glass text-rose-500"
+                }`}
+                title={showFavoritesOnly ? "Show All Colleges" : "Show Favorites"}
+              >
+                <Heart className={`h-5 w-5 ${showFavoritesOnly ? "fill-white" : ""}`} />
+              </button>
+              {showFavoritesOnly && (
+                <span className="bg-rose-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-left-2">
+                  Favorites Only
+                </span>
+              )}
+            </div>
+
+            <div className="fixed top-6 right-6 z-[100]">
+              <button
+                onClick={handleLogout}
+                className="p-3 glass text-slate-400 hover:text-rose-500 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer"
+                title="Exit Portal"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Student Matched Workspace Module */}
+            <StudentDashboard
+              currentUser={currentUser}
+              colleges={colleges}
+              onUpdateProfile={handleUpdateProfile}
+              onToggleFavorite={handleToggleFavoriteFromModal}
+              onSelectCollege={setSelectedCollege}
+              showFavoritesOnly={showFavoritesOnly}
+            />
+          </>
         ) : (
           // General Welcome & Registration Module
           <LoginView onLoginSuccess={handleLoginSuccess} onSkipLogin={handleSkipLogin} />
