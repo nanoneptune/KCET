@@ -45,17 +45,24 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
         })
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to send verification code.");
-      }
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to send verification code.");
+        }
 
-      if (data.otp) {
-        setSuccessMsg(`OTP generated! Since SMTP mail delivery is skipped or offline, please enter code: ${data.otp}`);
+        if (data.otp) {
+          setSuccessMsg(`OTP generated! Since SMTP mail delivery is skipped or offline, please enter code: ${data.otp}`);
+        } else {
+          setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}.`);
+        }
+        setStep("otp");
       } else {
-        setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}.`);
+        const text = await res.text();
+        console.error("Server response was not JSON:", text);
+        throw new Error("Server error occurred. Please try again later.");
       }
-      setStep("otp");
     } catch (err: any) {
       setErrorMsg(err.message || "An error occurred. Please check your SMTP settings.");
     } finally {
@@ -84,15 +91,22 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
         })
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "OTP verification failed.");
-      }
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "OTP verification failed.");
+        }
 
-      setSuccessMsg("Email successfully verified!");
-      setTimeout(() => {
-        onLoginSuccess(data.user);
-      }, 800);
+        setSuccessMsg("Email successfully verified!");
+        setTimeout(() => {
+          onLoginSuccess(data.user);
+        }, 800);
+      } else {
+        const text = await res.text();
+        console.error("Server response was not JSON:", text);
+        throw new Error("Verification failed. Please try again later.");
+      }
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid or expired OTP. Please try again.");
     } finally {

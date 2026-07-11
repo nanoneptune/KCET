@@ -12,6 +12,66 @@ async function startServer() {
 
   app.use(express.json());
 
+  // In-memory OTP storage (for production, use Redis or a database)
+  const otpStore = new Map<string, { otp: string, expires: number, firstName: string, lastName: string }>();
+
+  // API Route: Send OTP
+  app.post("/api/auth/send-otp", async (req, res) => {
+    const { email, firstName, lastName } = req.body;
+    
+    if (!email || !firstName || !lastName) {
+      return res.status(400).json({ error: "Email and name details are required." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    otpStore.set(email.toLowerCase(), { otp, expires, firstName, lastName });
+
+    // NOTE: In a production environment, you would use nodemailer or a service like Resend here.
+    // For now, we return it in the response so the user can actually log in during testing.
+    console.log(`OTP for ${email}: ${otp}`);
+    
+    res.json({ 
+      success: true, 
+      message: "OTP generated successfully",
+      otp: otp // Returning OTP for development/testing ease
+    });
+  });
+
+  // API Route: Verify OTP
+  app.post("/api/auth/verify-otp", async (req, res) => {
+    const { email, otp } = req.body;
+    const normalizedEmail = email.toLowerCase();
+    const record = otpStore.get(normalizedEmail);
+
+    if (!record) {
+      return res.status(400).json({ error: "No OTP requested for this email." });
+    }
+
+    if (Date.now() > record.expires) {
+      otpStore.delete(normalizedEmail);
+      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    if (record.otp !== otp) {
+      return res.status(400).json({ error: "Invalid verification code." });
+    }
+
+    // Success! Prepare user profile
+    const user = {
+      email: normalizedEmail,
+      name: `${record.firstName} ${record.lastName}`,
+      favorites: [],
+      is_admin: false
+    };
+
+    // Clean up
+    otpStore.delete(normalizedEmail);
+
+    res.json({ success: true, user });
+  });
+
   // Gemini API Initialization
   let ai: any = null;
   if (process.env.GEMINI_API_KEY) {
