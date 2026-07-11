@@ -4,8 +4,14 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
+
+// Initialize Supabase Admin Client (Server-side)
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function startServer() {
   const app = express();
@@ -24,10 +30,7 @@ async function startServer() {
     },
   });
 
-  // In-memory OTP storage
-  const otpStore = new Map<string, { otp: string, expires: number, firstName: string, lastName: string }>();
-
-  // API Route: Send OTP
+  // API Route: Send OTP (Persistent via Supabase)
   app.post("/api/auth/send-otp", async (req, res) => {
     const { email, firstName, lastName } = req.body;
     
@@ -36,12 +39,22 @@ async function startServer() {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    otpStore.set(email.toLowerCase(), { otp, expires, firstName, lastName });
-
-    // Send Real Email
     try {
+      // Upsert OTP into Supabase for persistence across serverless requests
+      const { error: upsertError } = await supabase
+        .from('auth_otps')
+        .upsert({ 
+          email: email.toLowerCase(), 
+          otp, 
+          expires_at: expiresAt,
+          first_name: firstName,
+          last_name: lastName
+        });
+
+      if (upsertError) throw upsertError;
+
       if (process.env.SMTP_HOST && process.env.SMTP_USER) {
         await transporter.sendMail({
           from: process.env.SMTP_FROM || `"College Predict" <${process.env.SMTP_USER}>`,
@@ -49,70 +62,71 @@ async function startServer() {
           subject: `${otp} is your verification code`,
           text: `Hi ${firstName}, your verification code for College Predict is ${otp}. It expires in 10 minutes.`,
           html: `
-            <div style="font-family: sans-serif; padding: 20px; color: #333;">
-              <h2 style="color: #f43f5e;">Verification Code</h2>
+            <div style="font-family: sans-serif; padding: 20px; color: #333; max-width: 500px; margin: auto; border: 1px solid #eee; border-radius: 20px;">
+              <h2 style="color: #f43f5e; text-align: center;">Verification Code</h2>
               <p>Hi <b>${firstName}</b>,</p>
               <p>Your verification code for College Predict is:</p>
-              <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #f43f5e; padding: 20px 0;">
+              <div style="font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #f43f5e; padding: 30px; text-align: center; background: #fff5f7; border-radius: 15px; margin: 20px 0;">
                 ${otp}
               </div>
-              <p>This code will expire in 10 minutes.</p>
-              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #999;">If you didn't request this, please ignore this email.</p>
+              <p style="text-align: center; color: #666; font-size: 14px;">This code will expire in 10 minutes.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+              <p style="font-size: 11px; color: #999; text-align: center;">College Predict Enrollment Platform</p>
             </div>
           `,
         });
         
-        res.json({ 
-          success: true, 
-          message: "OTP sent to your email address."
-        });
+        res.json({ success: true, message: "OTP sent to your email address." });
       } else {
-        // Fallback for development if no SMTP is configured
         console.log(`[DEV MODE] OTP for ${email}: ${otp}`);
-        res.json({ 
-          success: true, 
-          message: "OTP generated (Dev Mode: Check server logs)",
-          otp: otp // Keep it in response ONLY if SMTP is missing for dev convenience
-        });
+        res.json({ success: true, message: "OTP generated (Dev Mode)", otp });
       }
-    } catch (error) {
-      console.error("Email sending error:", error);
-      res.status(500).json({ error: "Failed to send verification email. Please check server configuration." });
+    } catch (error: any) {
+      console.error("Auth Error:", error);
+      res.status(500).json({ error: error.message || "Failed to process authentication request." });
     }
   });
 
-  // API Route: Verify OTP
+  // API Route: Verify OTP (Persistent via Supabase)
   app.post("/api/auth/verify-otp", async (req, res) => {
     const { email, otp } = req.body;
     const normalizedEmail = email.toLowerCase();
-    const record = otpStore.get(normalizedEmail);
 
-    if (!record) {
-      return res.status(400).json({ error: "No OTP requested for this email." });
+    try {
+      const { data, error } = await supabase
+        .from('auth_otps')
+        .select('*')
+        .eq('email', normalizedEmail)
+        .single();
+
+      if (error || !data) {
+        return res.status(400).json({ error: "No verification request found for this email." });
+      }
+
+      if (new Date() > new Date(data.expires_at)) {
+        await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
+        return res.status(400).json({ error: "Verification code has expired." });
+      }
+
+      if (data.otp !== otp) {
+        return res.status(400).json({ error: "Invalid verification code." });
+      }
+
+      const user = {
+        email: normalizedEmail,
+        name: `${data.first_name} ${data.last_name}`,
+        favorites: [],
+        is_admin: false
+      };
+
+      // Clean up OTP after success
+      await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
+
+      res.json({ success: true, user });
+    } catch (error: any) {
+      console.error("Verification Error:", error);
+      res.status(500).json({ error: "An error occurred during verification." });
     }
-
-    if (Date.now() > record.expires) {
-      otpStore.delete(normalizedEmail);
-      return res.status(400).json({ error: "OTP has expired. Please request a new one." });
-    }
-
-    if (record.otp !== otp) {
-      return res.status(400).json({ error: "Invalid verification code." });
-    }
-
-    // Success! Prepare user profile
-    const user = {
-      email: normalizedEmail,
-      name: `${record.firstName} ${record.lastName}`,
-      favorites: [],
-      is_admin: false
-    };
-
-    // Clean up
-    otpStore.delete(normalizedEmail);
-
-    res.json({ success: true, user });
   });
 
   // Gemini API Initialization
