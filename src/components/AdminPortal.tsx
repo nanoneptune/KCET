@@ -58,6 +58,17 @@ export default function AdminPortal({
   const [adminSearch, setAdminSearch] = useState("");
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
 
+  // Get all unique course names from the colleges registry to help admin with typing
+  const existingCourseNames = React.useMemo(() => {
+    const names = new Set<string>();
+    colleges.forEach(c => {
+      c.courses?.forEach(course => {
+        if (course.courseName) names.add(course.courseName);
+      });
+    });
+    return Array.from(names).sort();
+  }, [colleges]);
+
   const CLOUD_NAME = "dkvdbgijn";
   const UPLOAD_PRESET = "college-predict";
 
@@ -347,11 +358,17 @@ export default function AdminPortal({
                   <div className="space-y-3 bg-white/5 p-4 rounded-2xl border border-white/5">
                     <input
                       type="text"
+                      list="existing-courses-list"
                       value={newCourseName}
                       onChange={(e) => setNewCourseName(e.target.value)}
                       placeholder="Course Name"
                       className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
                     />
+                    <datalist id="existing-courses-list">
+                      {existingCourseNames.map(name => (
+                        <option key={name} value={name} />
+                      ))}
+                    </datalist>
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="number"

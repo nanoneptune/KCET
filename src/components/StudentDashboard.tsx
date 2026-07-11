@@ -61,6 +61,19 @@ export default function StudentDashboard({
   const [reportViewMode, setReportViewMode] = useState<"pdf" | "raw">("pdf");
 
   // Reset active image index and iframe interaction when college card shifts
+  const dynamicAvailableCourses = useMemo(() => {
+    const registryCourses = new Set<string>();
+    colleges.forEach(c => {
+      c.courses?.forEach(course => {
+        if (course.courseName) registryCourses.add(course.courseName);
+      });
+    });
+    
+    // Merge with default courses and remove duplicates
+    const combined = Array.from(new Set([...ALL_COURSES, ...Array.from(registryCourses)]));
+    return combined.sort();
+  }, [colleges]);
+
   useEffect(() => {
     setActiveImageIndex(0);
     setInteractWithIframe(false);
@@ -622,7 +635,7 @@ export default function StudentDashboard({
               </div>
 
               <div className="flex flex-wrap gap-2 max-h-96 overflow-y-auto p-2 scrollbar-hide">
-                {ALL_COURSES.filter(c => c.toLowerCase().includes(courseSearch.toLowerCase())).map(course => {
+                {dynamicAvailableCourses.filter(c => c.toLowerCase().includes(courseSearch.toLowerCase())).map(course => {
                   const isSelected = selectedCourses.includes(course);
                   const isHot = ["Computer Science", "Information Science", "AI & DS"].some(h => course.includes(h));
                   return (
