@@ -23,11 +23,14 @@ async function startServer() {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true",
+    secure: process.env.SMTP_SECURE === "true", // false for 587
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    tls: {
+      rejectUnauthorized: false // Helps with some serverless network restrictions
+    }
   });
 
   // API Route: Send OTP (Persistent via Supabase)
@@ -38,11 +41,15 @@ async function startServer() {
       return res.status(400).json({ error: "Email and name details are required." });
     }
 
+    if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
+      return res.status(500).json({ error: "Server Database configuration missing." });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     try {
-      // Upsert OTP into Supabase for persistence across serverless requests
+      // Upsert OTP into Supabase
       const { error: upsertError } = await supabase
         .from('auth_otps')
         .upsert({ 
@@ -51,11 +58,15 @@ async function startServer() {
           expires_at: expiresAt,
           first_name: firstName,
           last_name: lastName
-        });
+        }, { onConflict: 'email' });
 
-      if (upsertError) throw upsertError;
+      if (upsertError) {
+        console.error("Supabase OTP Error:", upsertError);
+        throw new Error(`Database error: ${upsertError.message}. Make sure 'auth_otps' table exists.`);
+      }
 
       if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        console.log(`Attempting to send email to ${email} via ${process.env.SMTP_HOST}...`);
         await transporter.sendMail({
           from: process.env.SMTP_FROM || `"College Predict" <${process.env.SMTP_USER}>`,
           to: email,
@@ -82,7 +93,7 @@ async function startServer() {
         res.json({ success: true, message: "OTP generated (Dev Mode)", otp });
       }
     } catch (error: any) {
-      console.error("Auth Error:", error);
+      console.error("Auth Exception:", error);
       res.status(500).json({ error: error.message || "Failed to process authentication request." });
     }
   });

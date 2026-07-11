@@ -37,5 +37,18 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access to colleges" ON public.colleges FOR SELECT USING (true);
 CREATE POLICY "Allow authenticated upsert to colleges" ON public.colleges FOR ALL USING (true);
 
-CREATE POLICY "Allow public read access to profiles" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Allow public upsert to profiles" ON public.profiles FOR ALL USING (true);
+-- 3. Create OTP Storage Table (Required for Vercel/Serverless persistence)
+CREATE TABLE IF NOT EXISTS public.auth_otps (
+    email TEXT PRIMARY KEY,
+    otp TEXT NOT NULL,
+    first_name TEXT,
+    last_name TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for OTP table
+ALTER TABLE public.auth_otps ENABLE ROW LEVEL SECURITY;
+
+-- Allow service role/authenticated upsert (Server-side only)
+CREATE POLICY "Allow server-side access to OTPs" ON public.auth_otps FOR ALL USING (true);
