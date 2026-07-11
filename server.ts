@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -12,7 +13,18 @@ async function startServer() {
 
   app.use(express.json());
 
-  // In-memory OTP storage (for production, use Redis or a database)
+  // Email Transporter Setup
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  // In-memory OTP storage
   const otpStore = new Map<string, { otp: string, expires: number, firstName: string, lastName: string }>();
 
   // API Route: Send OTP
@@ -28,15 +40,46 @@ async function startServer() {
 
     otpStore.set(email.toLowerCase(), { otp, expires, firstName, lastName });
 
-    // NOTE: In a production environment, you would use nodemailer or a service like Resend here.
-    // For now, we return it in the response so the user can actually log in during testing.
-    console.log(`OTP for ${email}: ${otp}`);
-    
-    res.json({ 
-      success: true, 
-      message: "OTP generated successfully",
-      otp: otp // Returning OTP for development/testing ease
-    });
+    // Send Real Email
+    try {
+      if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || `"College Predict" <${process.env.SMTP_USER}>`,
+          to: email,
+          subject: `${otp} is your verification code`,
+          text: `Hi ${firstName}, your verification code for College Predict is ${otp}. It expires in 10 minutes.`,
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; color: #333;">
+              <h2 style="color: #f43f5e;">Verification Code</h2>
+              <p>Hi <b>${firstName}</b>,</p>
+              <p>Your verification code for College Predict is:</p>
+              <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #f43f5e; padding: 20px 0;">
+                ${otp}
+              </div>
+              <p>This code will expire in 10 minutes.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+              <p style="font-size: 12px; color: #999;">If you didn't request this, please ignore this email.</p>
+            </div>
+          `,
+        });
+        
+        res.json({ 
+          success: true, 
+          message: "OTP sent to your email address."
+        });
+      } else {
+        // Fallback for development if no SMTP is configured
+        console.log(`[DEV MODE] OTP for ${email}: ${otp}`);
+        res.json({ 
+          success: true, 
+          message: "OTP generated (Dev Mode: Check server logs)",
+          otp: otp // Keep it in response ONLY if SMTP is missing for dev convenience
+        });
+      }
+    } catch (error) {
+      console.error("Email sending error:", error);
+      res.status(500).json({ error: "Failed to send verification email. Please check server configuration." });
+    }
   });
 
   // API Route: Verify OTP

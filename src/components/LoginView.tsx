@@ -53,7 +53,7 @@ export default function LoginView({ onLoginSuccess, onSkipLogin }: LoginViewProp
         }
 
         if (data.otp) {
-          setSuccessMsg(`OTP generated! Since SMTP mail delivery is skipped or offline, please enter code: ${data.otp}`);
+          setSuccessMsg(`Check server logs for code: ${data.otp}`);
         } else {
           setSuccessMsg(`A 6-digit verification code has been dispatched to ${email}.`);
         }
