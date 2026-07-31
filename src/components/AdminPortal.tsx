@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { School, Search, Trash2, Edit3, Loader2, Save, MapPin, Phone, Globe, PlusCircle, Users, LayoutDashboard, Upload, Image as ImageIcon } from "lucide-react";
+import { School, Search, Trash2, Edit3, Loader2, Save, MapPin, Phone, Globe, PlusCircle, Users, LayoutDashboard, Upload, Image as ImageIcon, Video, CheckCircle2, AlertCircle, Youtube, Sparkles, FileText, Wand2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { College, StudentProfile, CollegeCourse } from "../types";
 import { supabase } from "../lib/supabase";
+import AutoPlayVideo, { extractYouTubeId } from "./AutoPlayVideo";
 
 interface AdminPortalProps {
   colleges: College[];
@@ -22,6 +24,46 @@ export default function AdminPortal({
   const [details, setDetails] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [website, setWebsite] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+
+  // AI Details generation states
+  const [isAiGeneratingDetails, setIsAiGeneratingDetails] = useState(false);
+  const [showMdPreview, setShowMdPreview] = useState(false);
+
+  const handleGenerateAiDetails = async () => {
+    if (!name.trim()) {
+      setErrorMsg("Please enter College Name (and City/Place) first before generating AI details.");
+      return;
+    }
+
+    setIsAiGeneratingDetails(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      const res = await fetch("/api/ai/college-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), place: place.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Failed to generate AI college details.");
+      }
+
+      if (data.details) {
+        setDetails(data.details);
+        setShowMdPreview(true);
+        setSuccessMsg("✨ AI generated rich campus overview & student highlights! (Excluded fees/ranks as instructed)");
+      }
+    } catch (err: any) {
+      console.error("AI Details Generation Error:", err);
+      setErrorMsg(err.message || "Failed to generate AI college information.");
+    } finally {
+      setIsAiGeneratingDetails(false);
+    }
+  };
   
   // 5 Editable image links
   const [image1, setImage1] = useState("");
@@ -38,7 +80,8 @@ export default function AdminPortal({
   const [newCourseFees, setNewCourseFees] = useState("");
   const [newCourseAvgPkg, setNewCourseAvgPkg] = useState("");
   const [newCourseHiPkg, setNewCourseHiPkg] = useState("");
-  const [newRound, setNewRound] = useState("1");
+  const [newDcetCutoff, setNewDcetCutoff] = useState("");
+  const [newCutoffRound, setNewCutoffRound] = useState("R1");
   
   // Three categories as requested
   const [cat1Name, setCat1Name] = useState("General");
@@ -121,6 +164,7 @@ export default function AdminPortal({
     setDetails("");
     setContactNumber("");
     setWebsite("");
+    setVideoUrl("");
     setImage1("");
     setImage2("");
     setImage3("");
@@ -131,7 +175,8 @@ export default function AdminPortal({
     setNewCourseFees("");
     setNewCourseAvgPkg("");
     setNewCourseHiPkg("");
-    setNewRound("1");
+    setNewDcetCutoff("");
+    setNewCutoffRound("R1");
     setCat1Cutoff("");
     setCat2Cutoff("");
     setCat3Cutoff("");
@@ -147,6 +192,7 @@ export default function AdminPortal({
     setDetails(college.details);
     setContactNumber(college.contactNumber);
     setWebsite(college.website);
+    setVideoUrl(college.videoUrl || "");
     setImage1(college.images?.[0] || "");
     setImage2(college.images?.[1] || "");
     setImage3(college.images?.[2] || "");
@@ -164,22 +210,20 @@ export default function AdminPortal({
       setErrorMsg("Course Name is required to add a branch.");
       return;
     }
-    if (!cat1Cutoff || !cat2Cutoff || !cat3Cutoff) {
-      setErrorMsg("Please provide cutoff values for all three categories.");
-      return;
-    }
 
     const cObj: CollegeCourse = {
       courseName: newCourseName.trim(),
       fees: Number(newCourseFees) || 0,
       averagePackage: Number(newCourseAvgPkg) || 0,
       highestPackage: Number(newCourseHiPkg) || 0,
-      round: Number(newRound),
-      cutoffRank: Number(cat1Cutoff), // Using first category as default cutoff for listings
+      round: newCutoffRound === "R2" ? 2 : newCutoffRound === "R3" ? 3 : 1,
+      cutoffRound: newCutoffRound || "R1",
+      cutoffRank: Number(cat1Cutoff) || 0,
+      dcetCutoffRank: newDcetCutoff ? Number(newDcetCutoff) : undefined,
       categories: [
-        { name: cat1Name, cutoff: Number(cat1Cutoff) },
-        { name: cat2Name, cutoff: Number(cat2Cutoff) },
-        { name: cat3Name, cutoff: Number(cat3Cutoff) }
+        { name: cat1Name, cutoff: Number(cat1Cutoff) || 0, dcetCutoff: newDcetCutoff ? Number(newDcetCutoff) : undefined },
+        { name: cat2Name, cutoff: Number(cat2Cutoff) || 0 },
+        { name: cat3Name, cutoff: Number(cat3Cutoff) || 0 }
       ]
     };
     setCoursesList([...coursesList, cObj]);
@@ -187,6 +231,8 @@ export default function AdminPortal({
     setNewCourseFees("");
     setNewCourseAvgPkg("");
     setNewCourseHiPkg("");
+    setNewDcetCutoff("");
+    setNewCutoffRound("R1");
     setCat1Cutoff("");
     setCat2Cutoff("");
     setCat3Cutoff("");
@@ -220,13 +266,14 @@ export default function AdminPortal({
         name: name.trim(),
         place: place.trim(),
         locationAddress: locationAddress.trim() || `${name.trim()}, ${place.trim()}`,
-        averagePackage: coursesList.reduce((acc, c) => acc + c.averagePackage, 0) / coursesList.length,
-        highestPackage: Math.max(...coursesList.map(c => c.highestPackage)),
+        averagePackage: coursesList.reduce((acc, c) => acc + (c.averagePackage || 0), 0) / coursesList.length,
+        highestPackage: Math.max(...coursesList.map(c => c.highestPackage || 0)),
         course: coursesList[0]?.courseName || "General",
-        fees: Math.max(...coursesList.map(c => c.fees)),
+        fees: Math.max(...coursesList.map(c => c.fees || 0)),
         details: details.trim(),
         contactNumber: contactNumber.trim(),
         website: website.trim(),
+        videoUrl: videoUrl.trim(),
         images: activeImages,
         courses: coursesList
       };
@@ -321,13 +368,72 @@ export default function AdminPortal({
                     placeholder="City / Place"
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all font-medium"
                   />
-                  <textarea
-                    value={details}
-                    onChange={(e) => setDetails(e.target.value)}
-                    placeholder="College Details / Description"
-                    rows={3}
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all font-medium"
-                  />
+                  {/* College Details & Description with Round AI Button */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between px-1 pt-1">
+                      <label className="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                        <span>College Details & Description (Markdown Supported)</span>
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        {details.trim() && (
+                          <button
+                            type="button"
+                            onClick={() => setShowMdPreview(!showMdPreview)}
+                            className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 hover:text-slate-900 px-2.5 py-1 bg-slate-100 rounded-lg transition-all cursor-pointer"
+                          >
+                            {showMdPreview ? "Hide Preview" : "Preview MD"}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleGenerateAiDetails}
+                          disabled={isAiGeneratingDetails}
+                          className="h-8 w-8 bg-gradient-to-tr from-rose-500 via-rose-600 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white rounded-full shadow-md hover:shadow-rose-500/30 transition-all transform active:scale-90 disabled:opacity-50 flex items-center justify-center cursor-pointer group shrink-0"
+                          title="Click AI button to collect campus highlights, student life & facilities from online (No fees/ranks)"
+                        >
+                          {isAiGeneratingDetails ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                          ) : (
+                            <Sparkles className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <textarea
+                        value={details}
+                        onChange={(e) => setDetails(e.target.value)}
+                        placeholder="Enter college details or click the round AI ✨ button to collect campus highlights, facilities, and student life from online."
+                        rows={6}
+                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all font-medium text-xs sm:text-sm leading-relaxed"
+                      />
+                    </div>
+
+                    {/* Live Markdown Preview for Admin */}
+                    {showMdPreview && details.trim() && (
+                      <div className="mt-2 p-4 bg-slate-50/80 border border-slate-200 rounded-2xl shadow-inner max-h-60 overflow-y-auto">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-rose-500 block mb-2">Live Student View Rendered Preview:</span>
+                        <div className="prose prose-slate max-w-none text-xs">
+                          <ReactMarkdown
+                            components={{
+                              h1: ({ children }) => <h1 className="text-base font-black text-slate-900 mt-2 mb-1 border-b border-slate-200 pb-1">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-sm font-extrabold text-slate-800 mt-2 mb-1">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-xs font-bold text-rose-600 mt-1.5 mb-1">{children}</h3>,
+                              p: ({ children }) => <p className="text-xs text-slate-600 my-1 leading-relaxed">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-1 text-xs text-slate-700 pl-2">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-1 text-xs text-slate-700 pl-2">{children}</ol>,
+                              li: ({ children }) => <li className="text-slate-700 font-medium">{children}</li>,
+                              strong: ({ children }) => <strong className="font-extrabold text-slate-900">{children}</strong>,
+                            }}
+                          >
+                            {details}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Courses Manager */}
@@ -343,8 +449,8 @@ export default function AdminPortal({
                         <div key={i} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
                           <div className="min-w-0">
                             <span className="block text-white font-bold text-xs truncate">{c.courseName}</span>
-                            <span className="block text-[10px] text-slate-400 font-mono">
-                              Round {c.round} | Gen: {c.categories[0].cutoff} | {c.categories[1].name}: {c.categories[1].cutoff}
+                            <span className="block text-[10px] text-slate-300 font-mono mt-0.5">
+                              {c.cutoffRound || `R${c.round || 1}`} | CET: #{c.cutoffRank} {c.dcetCutoffRank ? `| DCET: #${c.dcetCutoffRank}` : ""} | Avg: {c.averagePackage || 0} LPA | Max: {c.highestPackage || 0} LPA
                             </span>
                           </div>
                           <button type="button" onClick={() => handleRemoveCourseFromList(i)} className="text-rose-400 p-1 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer">
@@ -356,67 +462,123 @@ export default function AdminPortal({
                   )}
 
                   <div className="space-y-3 bg-white/5 p-4 rounded-2xl border border-white/5">
-                    <input
-                      type="text"
-                      list="existing-courses-list"
-                      value={newCourseName}
-                      onChange={(e) => setNewCourseName(e.target.value)}
-                      placeholder="Course Name"
-                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
-                    />
-                    <datalist id="existing-courses-list">
-                      {existingCourseNames.map(name => (
-                        <option key={name} value={name} />
-                      ))}
-                    </datalist>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Course / Branch Name</label>
                       <input
-                        type="number"
-                        value={newCourseFees}
-                        onChange={(e) => setNewCourseFees(e.target.value)}
-                        placeholder="Fees (INR)"
-                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                        type="text"
+                        list="existing-courses-list"
+                        value={newCourseName}
+                        onChange={(e) => setNewCourseName(e.target.value)}
+                        placeholder="e.g. Computer Science Engineering"
+                        className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all font-medium"
                       />
-                      <select
-                        value={newRound}
-                        onChange={(e) => setNewRound(e.target.value)}
-                        className="w-full px-4 py-2 bg-slate-800 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
-                      >
-                        <option value="1">Round 1</option>
-                        <option value="2">Round 2</option>
-                        <option value="3">Round 3</option>
-                      </select>
+                      <datalist id="existing-courses-list">
+                        {existingCourseNames.map(name => (
+                          <option key={name} value={name} />
+                        ))}
+                      </datalist>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-slate-500 uppercase font-black ml-1">{cat1Name}</span>
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Fees (INR)</label>
+                        <input
+                          type="number"
+                          value={newCourseFees}
+                          onChange={(e) => setNewCourseFees(e.target.value)}
+                          placeholder="e.g. 95000"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Avg Placement</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={newCourseAvgPkg}
+                          onChange={(e) => setNewCourseAvgPkg(e.target.value)}
+                          placeholder="Avg LPA"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Max Placement</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={newCourseHiPkg}
+                          onChange={(e) => setNewCourseHiPkg(e.target.value)}
+                          placeholder="Max LPA"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Cutoffs & Round Section */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">CET Cutoff Rank</label>
                         <input
                           type="number"
                           value={cat1Cutoff}
                           onChange={(e) => setCat1Cutoff(e.target.value)}
-                          placeholder="Cutoff"
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                          placeholder="CET Cutoff"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all font-mono"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-slate-500 uppercase font-black ml-1">{cat2Name}</span>
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">DCET Rank Cutoff</label>
+                        <input
+                          type="number"
+                          value={newDcetCutoff}
+                          onChange={(e) => setNewDcetCutoff(e.target.value)}
+                          placeholder="DCET Cutoff"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Cutoff Round R1, R2, R3 (Default R1) */}
+                    <div>
+                      <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Cutoff Round (Default R1)</label>
+                      <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 gap-1">
+                        {["R1", "R2", "R3"].map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setNewCutoffRound(r)}
+                            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                              newCutoffRound === r
+                                ? "bg-rose-500 text-white font-black shadow-md shadow-rose-500/30"
+                                : "text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Category Cutoffs (Optional Additional) */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div>
+                        <span className="text-[9px] text-slate-500 uppercase font-black block mb-0.5">{cat2Name} Cutoff</span>
                         <input
                           type="number"
                           value={cat2Cutoff}
                           onChange={(e) => setCat2Cutoff(e.target.value)}
-                          placeholder="Cutoff"
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                          placeholder="OBC Cutoff"
+                          className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 transition-all"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-slate-500 uppercase font-black ml-1">{cat3Name}</span>
+                      <div>
+                        <span className="text-[9px] text-slate-500 uppercase font-black block mb-0.5">{cat3Name} Cutoff</span>
                         <input
                           type="number"
                           value={cat3Cutoff}
                           onChange={(e) => setCat3Cutoff(e.target.value)}
-                          placeholder="Cutoff"
-                          className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all"
+                          placeholder="SC/ST Cutoff"
+                          className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 transition-all"
                         />
                       </div>
                     </div>
@@ -424,28 +586,72 @@ export default function AdminPortal({
                     <button
                       type="button"
                       onClick={handleAddCourseToList}
-                      className="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-rose-500/20"
+                      className="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-rose-500/20 active:scale-98"
                     >
-                      Add Course
+                      Add Course Branch
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <input
                     type="text"
                     value={contactNumber}
                     onChange={(e) => setContactNumber(e.target.value)}
                     placeholder="Contact Number"
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all text-sm font-medium"
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all text-xs font-medium"
                   />
                   <input
                     type="text"
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     placeholder="Website URL"
-                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all text-sm font-medium"
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all text-xs font-medium"
                   />
+                </div>
+
+                {/* Video or YouTube URL */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      placeholder="Paste YouTube Link (e.g. https://www.youtube.com/watch?v=...) or Shorts/Video URL"
+                      className="w-full pl-11 pr-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all text-xs font-medium"
+                    />
+                    <Video className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500" />
+                  </div>
+
+                  {videoUrl.trim() && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5 font-bold">
+                          {extractYouTubeId(videoUrl) ? (
+                            <span className="text-emerald-600 flex items-center space-x-1">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              <span>YouTube Video Detected (ID: <code className="bg-emerald-100 px-1 py-0.5 rounded text-[11px] font-mono">{extractYouTubeId(videoUrl)}</code>)</span>
+                            </span>
+                          ) : videoUrl.match(/\.(mp4|webm|mov)(\?.*)?$/i) ? (
+                            <span className="text-blue-600 flex items-center space-x-1">
+                              <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                              <span>Direct Video File Detected</span>
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 flex items-center space-x-1">
+                              <AlertCircle className="w-4 h-4 text-amber-500" />
+                              <span>Attempting video embed</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Live Video Preview Box */}
+                      <div className="h-44 w-full rounded-xl overflow-hidden bg-black relative border border-slate-300">
+                        <AutoPlayVideo url={videoUrl} title="Admin Live Video Preview" interactive={true} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

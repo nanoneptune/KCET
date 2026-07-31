@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { X, MapPin, Phone, Globe, DollarSign, Award, School, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, MapPin, Phone, Globe, DollarSign, Award, School, Heart, ChevronLeft, ChevronRight, Video, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { College } from "../types";
+import AutoPlayVideo from "./AutoPlayVideo";
 
 interface CollegeDetailsModalProps {
   college: College;
@@ -77,6 +79,19 @@ export default function CollegeDetailsModal({
         {/* Content Box */}
         <div className="overflow-y-auto flex-1 p-6 space-y-6">
           
+          {/* Video Preview (if videoUrl is present) */}
+          {college.videoUrl && (
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center">
+                <Video className="h-3.5 w-3.5 text-rose-500 mr-1" />
+                <span>Campus Video Tour (Auto-playing • No Audio)</span>
+              </span>
+              <div className="h-60 sm:h-72 w-full rounded-2xl overflow-hidden bg-slate-950 relative border border-slate-200 shadow-md">
+                <AutoPlayVideo url={college.videoUrl} title={`${college.name} Video Tour`} interactive={true} />
+              </div>
+            </div>
+          )}
+
           {/* Main Visual Carousel / Gallery */}
           {college.images && college.images.length > 0 && (
             <div className="space-y-3">
@@ -160,9 +175,10 @@ export default function CollegeDetailsModal({
                 <thead className="bg-slate-50">
                   <tr>
                     <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Branch/Course</th>
-                    <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">College Fees</th>
+                    <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Fees</th>
+                    <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Round</th>
                     <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">CET Cutoff</th>
-                    <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Prev Cutoff</th>
+                    <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">DCET Cutoff</th>
                     <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Avg Placement</th>
                     <th className="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Max Placement</th>
                   </tr>
@@ -172,25 +188,51 @@ export default function CollegeDetailsModal({
                     <tr key={idx} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3 font-semibold text-gray-900">{course.courseName}</td>
                       <td className="px-4 py-3 font-medium text-emerald-700">₹{course.fees?.toLocaleString() || "0"}</td>
+                      <td className="px-4 py-3 font-bold text-rose-600">{course.cutoffRound || `R${course.round || 1}`}</td>
                       <td className="px-4 py-3 font-mono font-medium text-blue-600">
-                        {course.cutoffRank}
+                        #{course.cutoffRank || "N/A"}
                         {course.categories && course.categories.length > 0 ? (
                           <div className="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">
                             {course.categories.map(c => `${c.name}:${c.cutoff}`).join(", ")}
                           </div>
                         ) : null}
                       </td>
-                      <td className="px-4 py-3 font-mono text-gray-500">{course.cutoffRankPreviousYear || "N/A"}</td>
-                      <td className="px-4 py-3 font-mono font-medium text-gray-800">{course.averagePackage} LPA</td>
-                      <td className="px-4 py-3 font-mono font-bold text-slate-800">{course.highestPackage} LPA</td>
+                      <td className="px-4 py-3 font-mono font-medium text-indigo-600">
+                        {course.dcetCutoffRank ? `#${course.dcetCutoffRank}` : "N/A"}
+                      </td>
+                      <td className="px-4 py-3 font-mono font-medium text-gray-800">{course.averagePackage || 0} LPA</td>
+                      <td className="px-4 py-3 font-mono font-bold text-slate-800">{course.highestPackage || 0} LPA</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-normal whitespace-pre-wrap pt-2">
-              {college.details || "No additional description details have been entered for this college."}
-            </p>
+            <div className="pt-3 border-t border-slate-100">
+              <h3 className="font-display font-black text-gray-900 text-xs uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                <span>Campus Life & Detailed Overview</span>
+              </h3>
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                {college.details ? (
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => <h1 className="text-base sm:text-lg font-black text-slate-900 mt-2 mb-2 border-b border-slate-200 pb-1">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-sm sm:text-base font-extrabold text-slate-800 mt-3 mb-1.5">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-xs sm:text-sm font-bold text-rose-600 mt-2 mb-1">{children}</h3>,
+                      p: ({ children }) => <p className="text-xs sm:text-sm text-slate-600 my-1.5 leading-relaxed">{children}</p>,
+                      ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-2 text-xs sm:text-sm text-slate-700 pl-2">{children}</ul>,
+                      ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-2 text-xs sm:text-sm text-slate-700 pl-2">{children}</ol>,
+                      li: ({ children }) => <li className="text-slate-700 font-medium">{children}</li>,
+                      strong: ({ children }) => <strong className="font-extrabold text-slate-900">{children}</strong>,
+                    }}
+                  >
+                    {college.details}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="text-xs sm:text-sm text-gray-500 italic">No additional description details have been entered for this college.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Map Section */}

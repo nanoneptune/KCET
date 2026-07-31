@@ -1,15 +1,18 @@
 export interface CollegeCourse {
   courseName: string;
-  averagePackage: number; // in LPA
-  highestPackage: number; // in LPA
+  averagePackage: number; // in LPA (Avg Placement)
+  highestPackage: number; // in LPA (Maximum Placement)
   fees: number; // in INR (College Fees)
-  cutoffRank: number;
+  cutoffRank: number; // CET Cutoff
+  dcetCutoffRank?: number; // DCET Rank Cutoff
   cutoffRankPreviousYear?: number;
-  round: number; // e.g. Round 1, Round 2
+  round: number; // 1, 2, 3
+  cutoffRound?: string; // 'R1', 'R2', 'R3'
   categories: {
     name: string;
     cutoff: number;
-  }[]; // Three categories as requested
+    dcetCutoff?: number;
+  }[];
 }
 
 export interface College {
@@ -21,6 +24,7 @@ export interface College {
   place: string;
   locationAddress: string; // location address
   website: string;
+  videoUrl?: string; // Campus / Course Video or YouTube URL
   images: string[]; // 5 images of campus (can be edited by faculty)
   rating?: number;
   courses: CollegeCourse[];

@@ -3,13 +3,15 @@ import {
   Search, Sliders, Heart, School, Sparkles, MapPin, DollarSign, Award, 
   BookOpen, CheckSquare, Square, Info, Compass, Loader2, ChevronDown, 
   ChevronUp, Zap, Target, TrendingUp, ListOrdered, Share2, Download, Filter,
-  FileDown, Globe, RefreshCw, ExternalLink, X, ChevronLeft, ChevronRight
+  FileDown, Globe, RefreshCw, ExternalLink, X, ChevronLeft, ChevronRight, Video,
+  Star, RotateCcw, ShieldCheck
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { College, StudentProfile } from "../types";
 import { ALL_COURSES } from "../coursesData";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import AutoPlayVideo from "./AutoPlayVideo";
 
 interface StudentDashboardProps {
   currentUser: StudentProfile;
@@ -23,7 +25,7 @@ interface StudentDashboardProps {
 const CATEGORIES = ["General", "OBC", "SC/ST"];
 const ROUNDS = ["1", "2", "3"];
 
-export default function StudentDashboard({
+export function StudentDashboard({
   currentUser,
   colleges,
   onUpdateProfile,
@@ -40,6 +42,15 @@ export default function StudentDashboard({
   const [category, setCategory] = useState("General");
   const [round, setRound] = useState("1");
   const [isTierFilterOpen, setIsTierFilterOpen] = useState(false);
+
+  // Rank Type Switch (KCET vs DCET)
+  const [rankType, setRankType] = useState<"KCET" | "DCET">("KCET");
+
+  // Min / Max Range Filters
+  const [minFees, setMinFees] = useState<number>(0);
+  const [maxFees, setMaxFees] = useState<number>(300000);
+  const [minCutoff, setMinCutoff] = useState<number>(0);
+  const [maxCutoff, setMaxCutoff] = useState<number>(150000);
   
   // UI States
   const [courseSearch, setCourseSearch] = useState("");
@@ -59,6 +70,22 @@ export default function StudentDashboard({
   const [inAppSiteUrl, setInAppSiteUrl] = useState<string | null>(null);
   const [interactWithIframe, setInteractWithIframe] = useState(false);
   const [reportViewMode, setReportViewMode] = useState<"pdf" | "raw">("pdf");
+
+  // Helper to compute 5-star rating (1 to 5)
+  const calculateStarRating = (prob: number, avgPkg: number) => {
+    let stars = 3;
+    if (prob >= 85) stars += 1;
+    if (prob >= 95) stars += 0.5;
+    else if (prob >= 60) stars += 0.5;
+
+    if (avgPkg >= 10) stars += 1;
+    else if (avgPkg >= 7) stars += 0.5;
+
+    if (prob < 40) stars -= 1;
+    if (prob < 20) stars -= 1;
+
+    return Math.min(5, Math.max(1, Math.round(stars)));
+  };
 
   // Reset active image index and iframe interaction when college card shifts
   const dynamicAvailableCourses = useMemo(() => {
@@ -178,159 +205,110 @@ export default function StudentDashboard({
   };
 
   const handleDownloadPDF = () => {
-    if (!aiReport) return;
-
     const doc = new jsPDF();
     const studentName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
     const rank = cetRank;
     const cat = category;
 
-    // PAGE 1: COVER & FORECAST REPORT
-    // 1. Header border/banner
-    doc.setFillColor(26, 19, 11); // Rich Dark Charcoal
+    // PAGE 1: COVER & MANUAL COUNSELING REPORT
+    doc.setFillColor(26, 19, 11);
     doc.rect(0, 0, 210, 38, "F");
 
-    // Decorative Gold Line
-    doc.setFillColor(244, 63, 94); // Amber 600
+    doc.setFillColor(244, 63, 94);
     doc.rect(0, 38, 210, 3, "F");
 
-    doc.setTextColor(251, 113, 133); // Amber 400
+    doc.setTextColor(251, 113, 133);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("K-CET COUNSELLING CO-PILOT", 105, 18, { align: "center" });
+    doc.setFontSize(18);
+    doc.text("COUNSELING STRATEGY & ADVISORY REPORT", 105, 18, { align: "center" });
 
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text("OFFICIAL AI-POWERED STRATEGY FORECAST & ROADMAP", 105, 28, { align: "center" });
+    doc.text(`OFFICIAL ${rankType} MANUAL STRATEGY REPORT & 5-STAR RECOMMENDED SEQUENCE`, 105, 28, { align: "center" });
 
-    // 2. Student Profile Section
+    // Student Profile Section
     doc.setFillColor(248, 245, 240);
-    doc.rect(15, 52, 180, 28, "F");
+    doc.rect(15, 48, 180, 30, "F");
     doc.setDrawColor(244, 63, 94);
     doc.setLineWidth(0.5);
-    doc.rect(15, 52, 180, 28, "D");
+    doc.rect(15, 48, 180, 30, "D");
 
-    doc.setTextColor(120, 53, 15); // Amber 900
+    doc.setTextColor(120, 53, 15);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text("OFFICIAL STUDENT PROFILE & METADATA", 20, 58);
+    doc.text("STUDENT PROFILE & COUNSELING METADATA", 20, 55);
 
     doc.setTextColor(51, 65, 85);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
-    doc.text(`Name: ${studentName || "Guest User"}`, 20, 66);
-    doc.text(`CET Rank: #${rank || "N/A"}`, 20, 73);
-    doc.text(`Category: ${cat || "General"}`, 110, 66);
-    doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 110, 73);
+    doc.text(`Name: ${studentName || "Guest Student"}`, 20, 63);
+    doc.text(`Rank Mode: ${rankType} Rank #${rank || "N/A"}`, 20, 71);
+    doc.text(`Category: ${cat || "General"}`, 110, 63);
+    doc.text(`Counseling Round: Round ${round}`, 110, 71);
 
-    // 3. AI Forecast content
+    // Recommended Sequence Table with 5-Star Ratings
     doc.setTextColor(120, 53, 15);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("AI STRATEGY FORECAST REPORT", 15, 92);
+    doc.setFontSize(12);
+    doc.text("RECOMMENDED OPTION ENTRY SEQUENCE (5-STAR RATINGS)", 15, 90);
 
     doc.setDrawColor(244, 63, 94);
     doc.setLineWidth(0.8);
-    doc.line(15, 95, 195, 95);
+    doc.line(15, 93, 195, 93);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    doc.setTextColor(51, 65, 85);
-
-    // Filter out some markdown formatting like asterisks to keep text looking super neat
-    const cleanedReport = aiReport
-      .replace(/\*\*/g, "") // remove bold markers
-      .replace(/###/g, "") // remove headers markers
-      .replace(/##/g, "")
-      .replace(/#/g, "");
-
-    const textLines = doc.splitTextToSize(cleanedReport, 180);
-    let yPosition = 103;
-    const pageHeight = doc.internal.pageSize.height;
-
-    for (let i = 0; i < textLines.length; i++) {
-      if (yPosition > pageHeight - 35) {
-        doc.addPage();
-        yPosition = 25;
-      }
-      doc.text(textLines[i], 15, yPosition);
-      yPosition += 5.5;
-    }
-
-    // Add Signature Section
-    if (yPosition > pageHeight - 45) {
-      doc.addPage();
-      yPosition = 30;
-    } else {
-      yPosition += 10;
-    }
-
-    doc.setDrawColor(226, 232, 240);
-    doc.setLineWidth(0.5);
-    doc.line(15, yPosition, 195, yPosition);
-    yPosition += 10;
-
-    doc.setTextColor(100, 116, 139);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "italic");
-    doc.text("This report is programmatically generated using the CET TO COLLEGE AI Counseling Inference Engine.", 15, yPosition);
-    doc.text("Decisions should be double-checked against official cutoffs.", 15, yPosition + 4);
-
-    // 4. Strategic Options Table (Always on a new page for perfect layout hygiene)
     if (strategicOptions && strategicOptions.length > 0) {
-      doc.addPage();
-
-      // Table Page Header Banner
-      doc.setFillColor(26, 19, 11);
-      doc.rect(0, 0, 210, 30, "F");
-      
-      doc.setFillColor(244, 63, 94);
-      doc.rect(0, 30, 210, 2.5, "F");
-
-      doc.setTextColor(251, 113, 133);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("RECOMMENDED STRATEGIC OPTION ENTRY", 105, 18, { align: "center" });
-
-      doc.setTextColor(120, 53, 15);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.text("RECOMMENDED SEQUENCE CHART FOR COUNSELING ROUNDS", 15, 45);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(71, 85, 105);
-      doc.text("Below is your optimal branch-wise preference order, sorted dynamically by Package vs. Admission Probability.", 15, 51);
-
-      const tableData = strategicOptions.slice(0, 15).map((clg, index) => [
-        String(index + 1),
-        clg.name,
-        clg.place,
-        clg.bestMatchedCourse.courseName,
-        `${clg.bestMatchedCourse.averagePackage} LPA`,
-        `${clg.probability}%`
-      ]);
+      const tableData = strategicOptions.slice(0, 15).map((clg, index) => {
+        const stars = calculateStarRating(clg.probability, clg.bestMatchedCourse.averagePackage);
+        const starStr = "★".repeat(stars) + "☆".repeat(5 - stars);
+        return [
+          `#${index + 1}`,
+          clg.name,
+          clg.bestMatchedCourse.courseName,
+          `${starStr} (${stars}/5)`,
+          `${clg.bestMatchedCourse.averagePackage} LPA`,
+          `${clg.probability}%`
+        ];
+      });
 
       (doc as any).autoTable({
-        startY: 56,
-        head: [["Priority", "College Name", "Location", "Branch Name", "Placement Package", "Match Probability"]],
+        startY: 97,
+        head: [["Priority", "College Name", "Branch Name", "5-Star Rating", "Avg Package", "Match Prob"]],
         body: tableData,
         theme: "striped",
         headStyles: { fillColor: [120, 53, 15], textColor: [255, 255, 255], fontStyle: "bold" },
-        styles: { fontSize: 8.5, cellPadding: 3 },
+        styles: { fontSize: 8, cellPadding: 2.5 },
         columnStyles: {
           0: { cellWidth: 15, halign: "center" },
           1: { cellWidth: 55 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 35 },
-          4: { cellWidth: 25, halign: "right" },
-          5: { cellWidth: 25, halign: "center" }
+          2: { cellWidth: 40 },
+          3: { cellWidth: 35, halign: "center" },
+          4: { cellWidth: 20, halign: "right" },
+          5: { cellWidth: 15, halign: "center" }
         }
       });
     }
 
-    doc.save(`AI_Counselling_Strategy_Report_${currentUser.firstName || 'Student'}.pdf`);
+    // Counseling Strategy Rules
+    let finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 12 : 120;
+    if (finalY > 250) {
+      doc.addPage();
+      finalY = 25;
+    }
+
+    doc.setTextColor(120, 53, 15);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("COUNSELING OPTION ENTRY GUIDELINES", 15, finalY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(51, 65, 85);
+    doc.text("• Rule 1: Place high placement dream options in Option Position #1 to #3.", 15, finalY + 6);
+    doc.text("• Rule 2: Keep target options with 60%-85% probability in Option Position #4 to #7.", 15, finalY + 12);
+    doc.text("• Rule 3: Always list safe guarantee colleges (>90% probability) in Position #8+ to ensure seat allocation.", 15, finalY + 18);
+
+    doc.save(`${rankType}_Counseling_Strategy_Report_${rank || 'Student'}.pdf`);
   };
 
   // Colleges Filtering Engine
@@ -338,8 +316,25 @@ export default function StudentDashboard({
     const rankVal = Number(cetRank) || 0;
     
     let list = colleges.map(college => {
-      // Find best matched course
+      // Find matched courses that satisfy branch selection, fee range, and cutoff range
       const matchedCourses = college.courses?.filter(r => {
+        // Fee filter
+        const cFees = r.fees || college.fees || 0;
+        if (cFees < minFees || cFees > maxFees) return false;
+
+        // Cutoff calculation
+        let cutoff = rankType === "DCET" ? (r.dcetCutoffRank || r.cutoffRank || 0) : (r.cutoffRank || 0);
+        if (r.categories) {
+          const catObj = r.categories.find((c: any) => c.name === category);
+          if (catObj) {
+            cutoff = rankType === "DCET" && catObj.dcetCutoff ? catObj.dcetCutoff : catObj.cutoff;
+          }
+        }
+
+        // Cutoff range filter
+        if (minCutoff > 0 && cutoff < minCutoff) return false;
+        if (maxCutoff < 150000 && cutoff > maxCutoff) return false;
+
         if (selectedCourses.length > 0) {
           return selectedCourses.some(sc =>
             r.courseName.toLowerCase().includes(sc.toLowerCase()) || sc.toLowerCase().includes(r.courseName.toLowerCase())
@@ -364,44 +359,39 @@ export default function StudentDashboard({
       }
 
       const bestMatchedCourse = matchedCourses[0];
-      let effectiveCutoff = bestMatchedCourse?.cutoffRank || 0;
+      let effectiveCutoff = rankType === "DCET"
+        ? (bestMatchedCourse?.dcetCutoffRank || bestMatchedCourse?.cutoffRank || 0)
+        : (bestMatchedCourse?.cutoffRank || 0);
       
-      // Handle new categories array structure
+      // Handle categories array structure
       if (bestMatchedCourse?.categories) {
         const catObj = bestMatchedCourse.categories.find((c: any) => c.name === category);
         if (catObj) {
-          effectiveCutoff = catObj.cutoff;
+          effectiveCutoff = rankType === "DCET" && catObj.dcetCutoff ? catObj.dcetCutoff : catObj.cutoff;
         }
-      }
-      
-      // Filter by round if provided
-      if (bestMatchedCourse?.round && String(bestMatchedCourse.round) !== String(round)) {
-        // We might still show it but with lower probability or just filter it?
-        // User requested round selection, so let's filter if it doesn't match the selected round
-        // unless they want all rounds? Usually you pick a round to see cutoffs.
       }
 
       const probability = rankVal > 0 ? calculateProbability(rankVal, effectiveCutoff) : 0;
 
-      return { ...college, probability, bestMatchedCourse };
+      return { ...college, probability, bestMatchedCourse, effectiveCutoff };
     })
-    .filter((c): c is (College & { probability: number; bestMatchedCourse: any }) => c !== null);
+    .filter((c): c is (College & { probability: number; bestMatchedCourse: any; effectiveCutoff: number }) => c !== null);
 
-    // Fallback: If filtered list is empty and we are NOT looking only at favorites, show some colleges from database
+    // Fallback: If filtered list is empty and we are NOT looking only at favorites, show colleges from database
     if (list.length === 0 && !showFavoritesOnly) {
       list = colleges.map(college => {
         const bestMatchedCourse = college.courses?.[0] || { courseName: "General Engineering", cutoffRank: 50000, averagePackage: college.averagePackage || 6.5, fees: college.fees || 95000 };
-        // Assign a default reasonable probability
         return {
           ...college,
           probability: 70,
-          bestMatchedCourse
+          bestMatchedCourse,
+          effectiveCutoff: bestMatchedCourse.cutoffRank || 50000
         };
       });
     }
 
     return list.sort((a, b) => b.probability - a.probability);
-  }, [colleges, currentUser.favorites, showFavoritesOnly, collegeSearch, selectedCourses, category, cetRank]);
+  }, [colleges, currentUser.favorites, showFavoritesOnly, collegeSearch, selectedCourses, category, cetRank, rankType, minFees, maxFees, minCutoff, maxCutoff]);
 
   // Strategic Option Entry List (Step 04)
   const strategicOptions = useMemo(() => {
@@ -552,7 +542,36 @@ export default function StudentDashboard({
                     className="w-full text-7xl font-black text-slate-900 placeholder:text-slate-800 border-none focus:ring-0 p-0 text-center tabular-nums outline-hidden"
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-3 font-medium">Your KCET / DCET score/rank</p>
+                {/* KCET vs DCET Switch Button */}
+                <div className="mt-4 flex flex-col items-center">
+                  <div className="inline-flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => setRankType("KCET")}
+                      className={`px-6 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
+                        rankType === "KCET"
+                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/20 scale-102"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      KCET Rank
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRankType("DCET")}
+                      className={`px-6 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
+                        rankType === "DCET"
+                          ? "bg-rose-500 text-white shadow-md shadow-rose-500/20 scale-102"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      DCET Rank
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2 font-semibold">
+                    Selected Mode: <span className="text-rose-500 font-black">{rankType}</span> Counseling
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
@@ -687,9 +706,58 @@ export default function StudentDashboard({
 
             <div className="relative z-10">
               {/* Header Matches */}
-              <div className="px-2 mb-6 text-center">
-                <h3 className="text-white font-black text-2xl mb-2 tracking-tight">Your Matches</h3>
+              <div className="px-2 mb-4 text-center">
+                <h3 className="text-white font-black text-2xl mb-1 tracking-tight">Your Matches</h3>
                 <p className="text-white/90 text-sm font-bold">{processedColleges.length} colleges available</p>
+              </div>
+
+              {/* Range Filters Panel: Fees & Cutoff Limit Sliders */}
+              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-rose-100 shadow-xl mb-6 text-slate-900">
+                <div className="space-y-3">
+                  {/* Fees Drag Line Slider */}
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">Fees Limit</span>
+                      <span className="font-mono text-rose-600 font-extrabold text-[11px]">
+                        Up to ₹{(maxFees / 1000).toFixed(0)}k / yr
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="20000"
+                      max="300000"
+                      step="5000"
+                      value={maxFees}
+                      onChange={(e) => {
+                        setMinFees(0);
+                        setMaxFees(Number(e.target.value));
+                      }}
+                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-rose-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-rose-500 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-md"
+                    />
+                  </div>
+
+                  {/* Cutoff Rank Drag Line Slider */}
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{rankType} Cutoff Rank Limit</span>
+                      <span className="font-mono text-blue-600 font-extrabold text-[11px]">
+                        Up to #{maxCutoff.toLocaleString()}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1000"
+                      max="150000"
+                      step="1000"
+                      value={maxCutoff}
+                      onChange={(e) => {
+                        setMinCutoff(0);
+                        setMaxCutoff(Number(e.target.value));
+                      }}
+                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-500 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-md"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* CARD CONTAINER */}
@@ -749,12 +817,14 @@ export default function StudentDashboard({
                         )}
                       </AnimatePresence>
 
-                      {/* Image Top Half with Slideshow Trigger */}
+                      {/* Image or Video Top Half with Slideshow Trigger */}
                       <div 
                         className="h-72 w-full relative bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden group"
                         onClick={() => setShowSlideshow(true)}
                       >
-                        {hasImages ? (
+                        {college.videoUrl ? (
+                          <AutoPlayVideo url={college.videoUrl} title={college.name} />
+                        ) : hasImages ? (
                           <img 
                             src={imgUrl}
                             className="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-110"
@@ -766,11 +836,12 @@ export default function StudentDashboard({
                             <span className="font-bold tracking-widest uppercase text-xs">Campus View</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
                         
-                        {/* Slideshow Hint */}
-                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30 text-[10px] text-white font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                          View Gallery
+                        {/* Slideshow / Video Hint */}
+                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30 text-[10px] text-white font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                          {college.videoUrl ? <Video className="w-3 h-3 text-rose-400" /> : null}
+                          <span>{college.videoUrl ? "Playing Video" : "View Gallery"}</span>
                         </div>
                         
                         <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -789,26 +860,30 @@ export default function StudentDashboard({
                         </p>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-3 mb-6">
+                        <div className="grid grid-cols-2 gap-2.5 mb-6">
                           <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><DollarSign className="w-3 h-3 mr-0.5" /> Fees</span>
                             <span className="font-black text-slate-800 text-sm">₹{((bestCourse.fees || college.fees || 0) / 100000).toFixed(1)}L / yr</span>
                           </div>
                           <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> CET Cutoff</span>
-                            <span className="font-black text-slate-800 text-sm">#{bestCourse.cutoffRank?.toLocaleString() || "N/A"}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Round</span>
+                            <span className="font-black text-rose-600 text-sm">{bestCourse.cutoffRound || `R${bestCourse.round || 1}`}</span>
                           </div>
                           <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Prev Cutoff</span>
-                            <span className="font-black text-slate-800 text-sm">#{bestCourse.cutoffRankPreviousYear?.toLocaleString() || (bestCourse.cutoffRank ? (bestCourse.cutoffRank - 200).toLocaleString() : "N/A")}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-blue-500" /> CET Cutoff</span>
+                            <span className="font-black text-blue-900 text-sm">#{bestCourse.cutoffRank?.toLocaleString() || "N/A"}</span>
                           </div>
                           <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Avg Placement</span>
-                            <span className="font-black text-slate-800 text-sm">{bestCourse.averagePackage || "N/A"} LPA</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-indigo-500" /> DCET Cutoff</span>
+                            <span className="font-black text-indigo-900 text-sm">{bestCourse.dcetCutoffRank ? `#${bestCourse.dcetCutoffRank.toLocaleString()}` : "N/A"}</span>
                           </div>
-                          <div className="col-span-2 bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Max Placement</span>
-                            <span className="font-black text-slate-800 text-sm">{bestCourse.highestPackage || "N/A"} LPA</span>
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-emerald-500" /> Avg Placement</span>
+                            <span className="font-black text-emerald-800 text-sm">{bestCourse.averagePackage || "N/A"} LPA</span>
+                          </div>
+                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-purple-500" /> Max Placement</span>
+                            <span className="font-black text-purple-900 text-sm">{bestCourse.highestPackage || "N/A"} LPA</span>
                           </div>
                         </div>
 
@@ -957,73 +1032,135 @@ export default function StudentDashboard({
                 )}
               </div>
 
-              {/* INLINE AI STRATEGY ADVISORY REPORT */}
+              {/* MANUAL STRATEGY ADVISORY REPORT WITH 5-STAR RATINGS */}
               <div className="mt-8 border-t border-slate-100 pt-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Sparkles className="h-5 w-5 text-rose-400 animate-pulse" />
-                    <h3 className="text-lg font-black text-slate-900">AI Strategy Advisory Report</h3>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <Award className="h-5 w-5 text-rose-500" />
+                      <h3 className="text-lg font-black text-slate-900">Manual Strategy Advisory Report</h3>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-bold mt-0.5">
+                      Recommended Sequence for Counseling with Detailed 5-Star Ratings
+                    </p>
                   </div>
-                  {!loadingAi && aiReport && (
-                    <button
-                      onClick={handleDownloadPDF}
-                      className="px-3.5 py-1.5 bg-rose-500 hover:bg-rose-400 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center space-x-1.5 transition-all cursor-pointer shadow-md"
-                      title="Download Official PDF"
-                    >
-                      <FileDown className="h-4 w-4" />
-                      <span>Download PDF</span>
-                    </button>
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center space-x-2 transition-all cursor-pointer shadow-md shadow-rose-500/20 active:scale-95"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    <span>Download PDF Report</span>
+                  </button>
+                </div>
+
+                {/* Metadata Summary Banner */}
+                <div className="bg-slate-900 text-white rounded-2xl p-4 mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs shadow-lg">
+                  <div>
+                    <span className="text-rose-400 font-extrabold uppercase tracking-wider text-[9px]">Student Name</span>
+                    <p className="font-extrabold text-white mt-0.5 truncate">{currentUser.firstName || "Guest"} {currentUser.lastName || "Student"}</p>
+                  </div>
+                  <div>
+                    <span className="text-rose-400 font-extrabold uppercase tracking-wider text-[9px]">Rank Mode</span>
+                    <p className="font-black text-white mt-0.5">{rankType} Rank #{cetRank || "N/A"}</p>
+                  </div>
+                  <div>
+                    <span className="text-rose-400 font-extrabold uppercase tracking-wider text-[9px]">Category</span>
+                    <p className="font-extrabold text-white mt-0.5">{category || "General"}</p>
+                  </div>
+                  <div>
+                    <span className="text-rose-400 font-extrabold uppercase tracking-wider text-[9px]">Counseling Round</span>
+                    <p className="font-extrabold text-white mt-0.5">Round {round}</p>
+                  </div>
+                </div>
+
+                {/* 5-STAR RECOMMENDED OPTION SEQUENCE */}
+                <div className="space-y-4 mb-6">
+                  {strategicOptions.length > 0 ? (
+                    strategicOptions.slice(0, 10).map((college, idx) => {
+                      const stars = calculateStarRating(college.probability, college.bestMatchedCourse.averagePackage);
+                      const tierLabel = idx < 3 ? "Dream Option (Priority 1-3)" : idx < 7 ? "High Match Target (Priority 4-7)" : "Safe Bet Guarantee (Priority 8+)";
+                      const tierBadgeColor = idx < 3 ? "bg-amber-100 text-amber-800 border-amber-300" : idx < 7 ? "bg-blue-100 text-blue-800 border-blue-300" : "bg-emerald-100 text-emerald-800 border-emerald-300";
+
+                      return (
+                        <div key={college.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-md hover:shadow-lg transition-all space-y-3">
+                          <div className="flex flex-wrap justify-between items-start gap-2 border-b border-slate-100 pb-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="w-7 h-7 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                                #{idx + 1}
+                              </span>
+                              <div>
+                                <h4 className="font-black text-slate-900 text-sm">{college.name}</h4>
+                                <p className="text-[11px] font-bold text-rose-500">{college.bestMatchedCourse.courseName}</p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${tierBadgeColor}`}>
+                                {tierLabel}
+                              </span>
+                              <div className="flex items-center space-x-1 mt-1 text-amber-400">
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                  <Star key={s} className={`w-3.5 h-3.5 ${s <= stars ? "fill-amber-400 text-amber-400" : "text-slate-200 fill-slate-200"}`} />
+                                ))}
+                                <span className="text-[10px] font-extrabold text-slate-700 ml-1">({stars}.0 / 5.0)</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Detailed 5-Star Breakdown Grid */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <div>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">Admission Chance</span>
+                              <span className="font-extrabold text-emerald-600">{college.probability}% Match</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">Placement ROI</span>
+                              <span className="font-extrabold text-slate-800">₹{college.bestMatchedCourse.averagePackage} LPA</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">Annual Fees</span>
+                              <span className="font-extrabold text-slate-800">₹{(college.bestMatchedCourse.fees / 1000).toFixed(0)}k/yr</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">{rankType} Cutoff</span>
+                              <span className="font-extrabold text-blue-600">#{college.effectiveCutoff?.toLocaleString() || college.bestMatchedCourse.cutoffRank?.toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 text-[11px] text-slate-600 font-medium bg-rose-50/50 p-2 rounded-xl border border-rose-100/60">
+                            <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
+                            <span>
+                              <strong>Counseling Action:</strong> Enter as Option Position #{idx + 1} in {rankType} Round {round} option entry form.
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-center py-6 text-slate-500 font-bold">No options generated yet. Adjust rank or branch selections.</p>
                   )}
                 </div>
 
-                {loadingAi ? (
-                  <div className="flex flex-col items-center justify-center py-12 bg-slate-100 border border-slate-100 rounded-3xl">
-                    <div className="relative">
-                      <Loader2 className="h-10 w-10 text-rose-500 animate-spin mb-3" />
-                      <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-rose-400 animate-bounce" />
-                    </div>
-                    <p className="font-extrabold text-rose-400 uppercase tracking-widest text-[9px]">Generating Advisory Forecast...</p>
-                  </div>
-                ) : aiReport ? (
-                  /* BEAUTIFULLY STYLED INLINE ADVISORY VIEW */
-                  <div className="bg-white text-slate-100 rounded-3xl p-6 md:p-8 font-sans shadow-2xl border border-slate-100 relative select-text">
-                    {/* Metadata Grid */}
-                    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mb-6 grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <span className="text-slate-500 font-extrabold uppercase tracking-wider text-[8px]">Student Name</span>
-                        <p className="font-extrabold text-slate-900 mt-0.5">{currentUser.firstName || "Guest"} {currentUser.lastName || "User"}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-extrabold uppercase tracking-wider text-[8px]">Counselling Category</span>
-                        <p className="font-extrabold text-slate-900 mt-0.5">{category || "General"}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-extrabold uppercase tracking-wider text-[8px]">Karnataka CET Rank</span>
-                        <p className="font-extrabold text-slate-900 mt-0.5">#{cetRank || "N/A"}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 font-extrabold uppercase tracking-wider text-[8px]">Report Issue Date</span>
-                        <p className="font-extrabold text-slate-900 mt-0.5">{new Date().toLocaleDateString()}</p>
-                      </div>
-                    </div>
-
-                    {/* Report Content */}
-                    <div className="prose prose-invert max-w-none text-slate-600 whitespace-pre-line leading-relaxed text-[13px] font-medium">
-                      {aiReport.replace(/\*\*/g, "").replace(/###/g, "").replace(/##/g, "").replace(/#/g, "")}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 bg-slate-100 border border-dashed border-slate-100 rounded-3xl">
-                    <p className="text-xs text-slate-500 font-semibold mb-4">Unlock an advanced AI-powered admission forecast for your rank & category.</p>
-                    <button
-                      onClick={triggerAiPrediction}
-                      className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition-all cursor-pointer inline-flex items-center space-x-1.5"
-                    >
-                      <Sparkles className="h-4 w-4 text-white" />
-                      <span>Generate Forecast Report</span>
-                    </button>
-                  </div>
-                )}
+                {/* COUNSELING SEQUENCE RULES CARD */}
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs space-y-2">
+                  <h4 className="font-black text-slate-900 uppercase tracking-wider text-[11px] flex items-center space-x-1.5">
+                    <CheckSquare className="w-4 h-4 text-rose-500" />
+                    <span>Recommended Counseling Strategy Rules</span>
+                  </h4>
+                  <ul className="space-y-1.5 text-slate-700 font-medium pl-1">
+                    <li className="flex items-start space-x-2">
+                      <span className="text-amber-500 font-black">⭐ Rule 1:</span>
+                      <span>Place top tier 5-star dream options in Position #1 to #3. There is no penalty for unallocated dream choices.</span>
+                    </li>
+                    <li className="flex items-start space-x-2">
+                      <span className="text-blue-500 font-black">⭐ Rule 2:</span>
+                      <span>List realistic target colleges with 60%–85% probability in Position #4 to #7.</span>
+                    </li>
+                    <li className="flex items-start space-x-2">
+                      <span className="text-emerald-500 font-black">⭐ Rule 3:</span>
+                      <span>Always include at least 2 safe guarantee choices (&gt;90% match) in Position #8+ to ensure a confirmed seat in Round {round}.</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               <button 
@@ -1175,3 +1312,5 @@ export default function StudentDashboard({
     </div>
   );
 }
+
+export default StudentDashboard;

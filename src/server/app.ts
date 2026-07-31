@@ -160,11 +160,120 @@ app.post("/api/ai/predict", async (req, res) => {
     Student Rank: ${cetRank}, Category: ${category}, Interested Courses: ${courses?.join(", ")}
     Provide a counseling strategy report in Markdown.`;
 
-    const response = await ai.getGenerativeModel({ model: "gemini-1.5-flash" }).generateContent(prompt);
-    res.json({ prediction: response.response.text() });
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+    });
+    res.json({ prediction: response.text || "" });
   } catch (error: any) {
     console.error("AI Error:", error);
     res.status(500).json({ error: "Failed to generate prediction." });
+  }
+});
+
+// API Route: AI College Details & Campus Research (Powered strictly by Groq API)
+app.post("/api/ai/college-info", async (req, res) => {
+  const groqApiKey = process.env.GROQ_API_KEY || "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";
+
+  if (!groqApiKey) {
+    return res.status(500).json({ error: "Groq API key is not configured." });
+  }
+
+  try {
+    const { name, place } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "College Name is required." });
+    }
+
+    const collegeName = name.trim();
+    const city = place ? place.trim() : "";
+
+    const prompt = `You are an expert college research assistant and campus culture specialist for Indian engineering institutions.
+Generate a detailed, fascinating, and well-structured overview for the college: "${collegeName}" ${city ? `located in ${city}` : ''}.
+
+STRICT CONTENT RULES (MUST MANDATORILY FOLLOW):
+1. DO NOT INCLUDE ANY INFORMATION ABOUT FEES, TUITION COSTS, CUTOFF RANKS, CET RANKS, DCET RANKS, OR ADMISSION MARKS. Fees and ranks are strictly forbidden from this description.
+2. Focus purely on:
+   - Campus Infrastructure & Modern Facilities (labs, library, sports grounds, hostels, Wi-Fi campus)
+   - Academic Environment & Faculty Culture
+   - Student Life, Clubs, Technical & Cultural Fests
+   - Location Highlights & Connectivity in ${city || 'the area'}
+   - Notable Achievements, Innovation Hubs & Campus Vibe
+
+REQUIRED MARKDOWN FORMAT:
+Structure the entire output using rich Markdown:
+- Main title (# Title)
+- Subheaders (## Section, ### Sub-section)
+- Bold key terms (**key text**)
+- Clean bullet lists (- point)
+- Readable paragraph spacing.
+
+Keep the text engaging, professional, and visually appealing.`;
+
+    // Make request directly to Groq API
+    const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${groqApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert Indian college and campus guide assistant."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.6,
+        max_tokens: 1500
+      })
+    });
+
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text();
+      console.error("Groq API error response:", errorText);
+
+      // Attempt fallback model if 70b has issues
+      const fallbackResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature: 0.6,
+          max_tokens: 1500
+        })
+      });
+
+      if (!fallbackResponse.ok) {
+        throw new Error(`Groq API failed: ${groqResponse.status} ${groqResponse.statusText}`);
+      }
+
+      const fallbackData = await fallbackResponse.json();
+      const markdownText = fallbackData.choices?.[0]?.message?.content || `# ${collegeName}\n\nCampus details currently unavailable.`;
+      return res.json({ details: markdownText });
+    }
+
+    const groqData = await groqResponse.json();
+    const markdownText = groqData.choices?.[0]?.message?.content || `# ${collegeName}\n\nCampus details currently unavailable.`;
+
+    res.json({ details: markdownText });
+  } catch (error: any) {
+    console.error("Groq AI College Info Error:", error);
+    res.status(500).json({ error: error.message || "Failed to generate AI college information using Groq." });
   }
 });
 
