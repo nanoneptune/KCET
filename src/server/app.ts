@@ -97,6 +97,9 @@ app.post("/api/auth/send-otp", async (req, res) => {
   }
 });
 
+// In-memory student profiles backup store
+const inMemoryStudents: any[] = [];
+
 // API Route: Verify OTP
 app.post("/api/auth/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -124,16 +127,162 @@ app.post("/api/auth/verify-otp", async (req, res) => {
 
     const user = {
       email: normalizedEmail,
-      name: `${data.first_name} ${data.last_name}`,
+      firstName: data.first_name || "",
+      lastName: data.last_name || "",
+      name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
       favorites: [],
+      courses: [],
+      isVerified: true,
       is_admin: false
     };
+
+    // Upsert into Supabase profiles table
+    try {
+      await supabase.from('profiles').upsert({
+        email: normalizedEmail,
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        is_verified: true,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'email' });
+    } catch (dbErr) {
+      console.warn("Supabase profile save warning:", dbErr);
+    }
+
+    // Upsert into inMemoryStudents
+    const idx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (idx >= 0) {
+      inMemoryStudents[idx] = { ...inMemoryStudents[idx], ...user };
+    } else {
+      inMemoryStudents.push(user);
+    }
 
     await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
     res.json({ success: true, user });
   } catch (error: any) {
     console.error("Verification Error:", error);
     res.status(500).json({ error: "An error occurred during verification." });
+  }
+});
+
+// API Route: Update Student Profile
+app.post("/api/auth/update-profile", async (req, res) => {
+  const { email, firstName, lastName, cetRank, dcetScore, examScore, courses, favorites } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required to update profile." });
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  
+  // Exclude guest logins from profile updates
+  if (normalizedEmail.startsWith("guest_") || normalizedEmail.endsWith("@predictor.local")) {
+    return res.json({ success: true, user: req.body });
+  }
+
+  try {
+    const profileRecord = {
+      email: normalizedEmail,
+      first_name: firstName || "",
+      last_name: lastName || "",
+      cet_rank: cetRank ? Number(cetRank) : null,
+      dcet_score: dcetScore ? Number(dcetScore) : null,
+      exam_score: examScore ? Number(examScore) : null,
+      courses: courses || [],
+      favorites: favorites || [],
+      is_verified: true,
+      updated_at: new Date().toISOString()
+    };
+
+    // Save in Supabase
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(profileRecord, { onConflict: 'email' })
+      .select()
+      .single();
+
+    const resultUser = {
+      email: normalizedEmail,
+      firstName: data?.first_name || firstName || "",
+      lastName: data?.last_name || lastName || "",
+      cetRank: data?.cet_rank ?? (cetRank ? Number(cetRank) : undefined),
+      dcetScore: data?.dcet_score ?? (dcetScore ? Number(dcetScore) : undefined),
+      examScore: data?.exam_score ?? (examScore ? Number(examScore) : undefined),
+      courses: data?.courses || courses || [],
+      favorites: data?.favorites || favorites || [],
+      isVerified: true
+    };
+
+    // Update in-memory cache as well
+    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (memIdx >= 0) {
+      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...resultUser };
+    } else {
+      inMemoryStudents.push(resultUser);
+    }
+
+    res.json({ success: true, user: resultUser });
+  } catch (err: any) {
+    console.warn("Backend profile sync notice (saved to memory cache):", err.message);
+
+    const fallbackUser = {
+      email: normalizedEmail,
+      firstName: firstName || "",
+      lastName: lastName || "",
+      cetRank: cetRank ? Number(cetRank) : undefined,
+      dcetScore: dcetScore ? Number(dcetScore) : undefined,
+      examScore: examScore ? Number(examScore) : undefined,
+      courses: courses || [],
+      favorites: favorites || [],
+      isVerified: true
+    };
+
+    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (memIdx >= 0) {
+      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...fallbackUser };
+    } else {
+      inMemoryStudents.push(fallbackUser);
+    }
+
+    res.json({ success: true, user: fallbackUser });
+  }
+});
+
+// API Route: Get Registered Students (For Admin Portal)
+app.get("/api/admin/students", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('*');
+    let loaded: any[] = [];
+    if (!error && data && data.length > 0) {
+      loaded = data.map((p: any) => ({
+        email: p.email,
+        firstName: p.first_name || p.firstName || "Student",
+        lastName: p.last_name || p.lastName || "",
+        cetRank: p.cet_rank || p.cetRank,
+        dcetScore: p.dcet_score || p.dcetScore,
+        courses: p.courses || [],
+        favorites: p.favorites || [],
+        isVerified: p.is_verified ?? true
+      }));
+    }
+
+    // Merge with inMemoryStudents
+    inMemoryStudents.forEach(m => {
+      if (!loaded.some(l => l.email.toLowerCase() === m.email.toLowerCase())) {
+        loaded.push(m);
+      }
+    });
+
+    // Filter ONLY genuine email students (exclude guest_)
+    const emailOnly = loaded.filter(s => {
+      if (!s.email) return false;
+      const e = s.email.toLowerCase();
+      return !e.startsWith("guest_") && !e.endsWith("@predictor.local");
+    });
+
+    res.json({ students: emailOnly });
+  } catch (err: any) {
+    console.error("Get admin students error:", err);
+    res.json({ students: inMemoryStudents.filter(s => s.email && !s.email.startsWith("guest_")) });
   }
 });
 

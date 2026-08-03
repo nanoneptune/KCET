@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { College, StudentProfile } from "../types";
 import { ALL_COURSES } from "../coursesData";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import AutoPlayVideo from "./AutoPlayVideo";
 
 interface StudentDashboardProps {
@@ -64,7 +64,17 @@ export function StudentDashboard({
   // Tinder Swipe matcher states
   const [viewMode, setViewMode] = useState<"swipe" | "list">("swipe");
   const [swipeIndex, setSwipeIndex] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "up" | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  // Helper to format fees in Lakhs for clean display (e.g., 300,000 -> Rs. 3 Lakh)
+  const formatFeeLimitDisplay = (amount: number) => {
+    if (amount >= 100000) {
+      const lakhVal = amount / 100000;
+      return `Rs. ${lakhVal % 1 === 0 ? lakhVal : lakhVal.toFixed(1)} Lakh`;
+    }
+    return `Rs. ${(amount / 1000).toFixed(0)}k`;
+  };
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [inAppSiteUrl, setInAppSiteUrl] = useState<string | null>(null);
@@ -158,10 +168,12 @@ export function StudentDashboard({
   };
 
   const handleSwipeLeft = () => {
+    setSwipeDirection("left");
     setSwipeIndex(prev => prev + 1);
   };
 
   const handleSwipeRight = (collegeId: string) => {
+    setSwipeDirection("right");
     setShowHeartAnimation(true);
     setTimeout(() => {
       setShowHeartAnimation(false);
@@ -169,7 +181,7 @@ export function StudentDashboard({
         onToggleFavorite(collegeId);
       }
       setSwipeIndex(prev => prev + 1);
-    }, 600);
+    }, 450);
   };
 
   const handleSwipeUp = (websiteUrl: string) => {
@@ -205,110 +217,116 @@ export function StudentDashboard({
   };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    const studentName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
-    const rank = cetRank;
-    const cat = category;
+    try {
+      const doc = new jsPDF();
+      const studentName = `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+      const rank = cetRank;
+      const cat = category;
 
-    // PAGE 1: COVER & MANUAL COUNSELING REPORT
-    doc.setFillColor(26, 19, 11);
-    doc.rect(0, 0, 210, 38, "F");
+      // PAGE 1: COVER & MANUAL COUNSELING REPORT
+      doc.setFillColor(26, 19, 11);
+      doc.rect(0, 0, 210, 38, "F");
 
-    doc.setFillColor(244, 63, 94);
-    doc.rect(0, 38, 210, 3, "F");
+      doc.setFillColor(244, 63, 94);
+      doc.rect(0, 38, 210, 3, "F");
 
-    doc.setTextColor(251, 113, 133);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("COUNSELING STRATEGY & ADVISORY REPORT", 105, 18, { align: "center" });
+      doc.setTextColor(251, 113, 133);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("COUNSELING STRATEGY & ADVISORY REPORT", 105, 18, { align: "center" });
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`OFFICIAL ${rankType} MANUAL STRATEGY REPORT & 5-STAR RECOMMENDED SEQUENCE`, 105, 28, { align: "center" });
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(`OFFICIAL ${rankType} MANUAL STRATEGY REPORT & RECOMMENDED SEQUENCE`, 105, 28, { align: "center" });
 
-    // Student Profile Section
-    doc.setFillColor(248, 245, 240);
-    doc.rect(15, 48, 180, 30, "F");
-    doc.setDrawColor(244, 63, 94);
-    doc.setLineWidth(0.5);
-    doc.rect(15, 48, 180, 30, "D");
+      // Student Profile Section
+      doc.setFillColor(248, 245, 240);
+      doc.rect(15, 48, 180, 30, "F");
+      doc.setDrawColor(244, 63, 94);
+      doc.setLineWidth(0.5);
+      doc.rect(15, 48, 180, 30, "D");
 
-    doc.setTextColor(120, 53, 15);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("STUDENT PROFILE & COUNSELING METADATA", 20, 55);
+      doc.setTextColor(120, 53, 15);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("STUDENT PROFILE & COUNSELING METADATA", 20, 55);
 
-    doc.setTextColor(51, 65, 85);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9.5);
-    doc.text(`Name: ${studentName || "Guest Student"}`, 20, 63);
-    doc.text(`Rank Mode: ${rankType} Rank #${rank || "N/A"}`, 20, 71);
-    doc.text(`Category: ${cat || "General"}`, 110, 63);
-    doc.text(`Counseling Round: Round ${round}`, 110, 71);
+      doc.setTextColor(51, 65, 85);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.text(`Name: ${studentName || "Guest Student"}`, 20, 63);
+      doc.text(`Rank Mode: ${rankType} Rank #${rank || "N/A"}`, 20, 71);
+      doc.text(`Category: ${cat || "General"}`, 110, 63);
+      doc.text(`Counseling Round: Round ${round}`, 110, 71);
 
-    // Recommended Sequence Table with 5-Star Ratings
-    doc.setTextColor(120, 53, 15);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("RECOMMENDED OPTION ENTRY SEQUENCE (5-STAR RATINGS)", 15, 90);
+      // Recommended Sequence Table with Ratings
+      doc.setTextColor(120, 53, 15);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.text("RECOMMENDED OPTION ENTRY SEQUENCE (5-STAR RATINGS)", 15, 90);
 
-    doc.setDrawColor(244, 63, 94);
-    doc.setLineWidth(0.8);
-    doc.line(15, 93, 195, 93);
+      doc.setDrawColor(244, 63, 94);
+      doc.setLineWidth(0.8);
+      doc.line(15, 93, 195, 93);
 
-    if (strategicOptions && strategicOptions.length > 0) {
-      const tableData = strategicOptions.slice(0, 15).map((clg, index) => {
-        const stars = calculateStarRating(clg.probability, clg.bestMatchedCourse.averagePackage);
-        const starStr = "★".repeat(stars) + "☆".repeat(5 - stars);
-        return [
-          `#${index + 1}`,
-          clg.name,
-          clg.bestMatchedCourse.courseName,
-          `${starStr} (${stars}/5)`,
-          `${clg.bestMatchedCourse.averagePackage} LPA`,
-          `${clg.probability}%`
-        ];
-      });
+      const reportOptions = (strategicOptions && strategicOptions.length > 0) ? strategicOptions : processedColleges;
 
-      (doc as any).autoTable({
-        startY: 97,
-        head: [["Priority", "College Name", "Branch Name", "5-Star Rating", "Avg Package", "Match Prob"]],
-        body: tableData,
-        theme: "striped",
-        headStyles: { fillColor: [120, 53, 15], textColor: [255, 255, 255], fontStyle: "bold" },
-        styles: { fontSize: 8, cellPadding: 2.5 },
-        columnStyles: {
-          0: { cellWidth: 15, halign: "center" },
-          1: { cellWidth: 55 },
-          2: { cellWidth: 40 },
-          3: { cellWidth: 35, halign: "center" },
-          4: { cellWidth: 20, halign: "right" },
-          5: { cellWidth: 15, halign: "center" }
-        }
-      });
+      if (reportOptions && reportOptions.length > 0) {
+        const tableData = reportOptions.slice(0, 20).map((clg, index) => {
+          const stars = calculateStarRating(clg.probability, clg.bestMatchedCourse.averagePackage);
+          return [
+            `#${index + 1}`,
+            clg.name,
+            clg.bestMatchedCourse.courseName,
+            `${stars}/5 Stars`,
+            `${clg.bestMatchedCourse.averagePackage || 0} LPA`,
+            `${clg.probability}%`
+          ];
+        });
+
+        autoTable(doc, {
+          startY: 97,
+          head: [["Priority", "College Name", "Branch Name", "Rating", "Avg Package", "Match Prob"]],
+          body: tableData,
+          theme: "striped",
+          headStyles: { fillColor: [120, 53, 15], textColor: [255, 255, 255], fontStyle: "bold" },
+          styles: { fontSize: 8, cellPadding: 2.5 },
+          columnStyles: {
+            0: { cellWidth: 15, halign: "center" },
+            1: { cellWidth: 55 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 35, halign: "center" },
+            4: { cellWidth: 20, halign: "right" },
+            5: { cellWidth: 15, halign: "center" }
+          }
+        });
+      }
+
+      // Counseling Strategy Rules
+      let finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 12 : 120;
+      if (finalY > 250) {
+        doc.addPage();
+        finalY = 25;
+      }
+
+      doc.setTextColor(120, 53, 15);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("COUNSELING OPTION ENTRY GUIDELINES", 15, finalY);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(51, 65, 85);
+      doc.text("- Rule 1: Place high placement dream options in Option Position #1 to #3.", 15, finalY + 6);
+      doc.text("- Rule 2: Keep target options with 60%-85% probability in Option Position #4 to #7.", 15, finalY + 12);
+      doc.text("- Rule 3: Always list safe guarantee colleges (>90% probability) in Position #8+ to ensure seat allocation.", 15, finalY + 18);
+
+      doc.save(`${rankType}_Counseling_Strategy_Report_${rank || 'Student'}.pdf`);
+    } catch (err: any) {
+      console.error("PDF generation failed:", err);
+      alert("Error generating PDF: " + (err.message || "Unknown error"));
     }
-
-    // Counseling Strategy Rules
-    let finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 12 : 120;
-    if (finalY > 250) {
-      doc.addPage();
-      finalY = 25;
-    }
-
-    doc.setTextColor(120, 53, 15);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("COUNSELING OPTION ENTRY GUIDELINES", 15, finalY);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(51, 65, 85);
-    doc.text("• Rule 1: Place high placement dream options in Option Position #1 to #3.", 15, finalY + 6);
-    doc.text("• Rule 2: Keep target options with 60%-85% probability in Option Position #4 to #7.", 15, finalY + 12);
-    doc.text("• Rule 3: Always list safe guarantee colleges (>90% probability) in Position #8+ to ensure seat allocation.", 15, finalY + 18);
-
-    doc.save(`${rankType}_Counseling_Strategy_Report_${rank || 'Student'}.pdf`);
   };
 
   // Colleges Filtering Engine
@@ -711,64 +729,99 @@ export function StudentDashboard({
                 <p className="text-white/90 text-sm font-bold">{processedColleges.length} colleges available</p>
               </div>
 
-              {/* Range Filters Panel: Fees & Cutoff Limit Sliders */}
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-rose-100 shadow-xl mb-6 text-slate-900">
-                <div className="space-y-3">
-                  {/* Fees Drag Line Slider */}
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                      <span className="text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">Fees Limit</span>
-                      <span className="font-mono text-rose-600 font-extrabold text-[11px]">
-                        Up to ₹{(maxFees / 1000).toFixed(0)}k / yr
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="20000"
-                      max="300000"
-                      step="5000"
-                      value={maxFees}
-                      onChange={(e) => {
-                        setMinFees(0);
-                        setMaxFees(Number(e.target.value));
-                      }}
-                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-rose-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-rose-500 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-md"
-                    />
+              {/* Range Filters Panel: Borderless Simple Draggers */}
+              <div className="py-2 mb-6 text-white space-y-3">
+                {/* Fees Drag Line Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs font-bold text-white/90">
+                    <span className="text-[11px] uppercase tracking-wider font-extrabold text-white/80">Fees Limit</span>
+                    <span className="font-mono text-white font-black text-xs bg-white/10 px-2.5 py-1 rounded-md shadow-inner">
+                      Up to {formatFeeLimitDisplay(maxFees)} / yr
+                    </span>
                   </div>
+                  <input
+                    type="range"
+                    min="20000"
+                    max="300000"
+                    step="5000"
+                    value={maxFees}
+                    onChange={(e) => {
+                      setMinFees(0);
+                      setMaxFees(Number(e.target.value));
+                    }}
+                    className="w-full appearance-none h-2 bg-white/30 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-lg"
+                  />
+                </div>
 
-                  {/* Cutoff Rank Drag Line Slider */}
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                      <span className="text-[10px] uppercase tracking-wider text-slate-500 font-extrabold">{rankType} Cutoff Rank Limit</span>
-                      <span className="font-mono text-blue-600 font-extrabold text-[11px]">
-                        Up to #{maxCutoff.toLocaleString()}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1000"
-                      max="150000"
-                      step="1000"
-                      value={maxCutoff}
-                      onChange={(e) => {
-                        setMinCutoff(0);
-                        setMaxCutoff(Number(e.target.value));
-                      }}
-                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-blue-500 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-md"
-                    />
+                {/* Cutoff Rank Drag Line Slider */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs font-bold text-white/90">
+                    <span className="text-[11px] uppercase tracking-wider font-extrabold text-white/80">{rankType} Cutoff Rank</span>
+                    <span className="font-mono text-white font-black text-xs bg-white/10 px-2.5 py-1 rounded-md shadow-inner">
+                      Up to #{maxCutoff.toLocaleString()}
+                    </span>
                   </div>
+                  <input
+                    type="range"
+                    min="1000"
+                    max="150000"
+                    step="1000"
+                    value={maxCutoff}
+                    onChange={(e) => {
+                      setMinCutoff(0);
+                      setMaxCutoff(Number(e.target.value));
+                    }}
+                    className="w-full appearance-none h-2 bg-white/30 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-lg"
+                  />
                 </div>
               </div>
 
-              {/* CARD CONTAINER */}
-              <div className="relative mt-8">
+              {/* CARD CONTAINER WITH REALISTIC STACK LAYER */}
+              <div className="relative mt-8 min-h-[580px]">
                 {/* Floating pill */}
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 bg-white shadow-md text-rose-500 px-4 py-1.5 rounded-full flex items-center space-x-1 font-bold text-xs border border-rose-100">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 bg-white shadow-md text-rose-500 px-4 py-1.5 rounded-full flex items-center space-x-1 font-bold text-xs border border-rose-100">
                   <Sparkles className="w-3.5 h-3.5 text-rose-500" />
                   <span>College Match</span>
                 </div>
 
-                <AnimatePresence mode="popLayout">
+                {/* BACKGROUND STACK PREVIEW CARD */}
+                {swipeIndex + 1 < processedColleges.length && (() => {
+                  const nextCollege = processedColleges[swipeIndex + 1];
+                  const nextHasImages = nextCollege.images && nextCollege.images.length > 0;
+                  const nextImgUrl = nextHasImages ? nextCollege.images[0] : "";
+                  const nextBestCourse = nextCollege.bestMatchedCourse || {};
+                  return (
+                    <div
+                      key={nextCollege.id + "-stack-bg"}
+                      className="absolute inset-0 bg-white w-full rounded-[2.5rem] shadow-md overflow-hidden text-slate-900 border border-slate-100 pointer-events-none transform scale-[0.94] translate-y-3 opacity-60 z-0 transition-all duration-300"
+                    >
+                      <div className="h-72 w-full relative bg-slate-900 flex items-center justify-center overflow-hidden">
+                        {nextImgUrl ? (
+                          <img src={nextImgUrl} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-rose-600 flex flex-col items-center justify-center text-white/40">
+                            <School className="w-20 h-20 opacity-40" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                          <h2 className="text-2xl font-black leading-tight drop-shadow-md">{nextCollege.name}</h2>
+                          <div className="flex items-center space-x-1 mt-1 text-sm font-semibold opacity-90">
+                            <MapPin className="w-4 h-4" />
+                            <span>{nextCollege.place} • {nextCollege.probability}% Match</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6 opacity-60">
+                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5 line-clamp-2">
+                          {nextCollege.details || `Top college offering ${nextBestCourse.courseName || "various courses"} for your rank.`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <AnimatePresence mode="popLayout" custom={swipeDirection}>
                 {swipeIndex < processedColleges.length ? (() => {
                   const college = processedColleges[swipeIndex];
                   const probInfo = getProbabilityLabel(college.probability);
@@ -780,28 +833,46 @@ export function StudentDashboard({
                   return (
                     <motion.div
                       key={college.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9, x: 100 }}
-                      animate={{ opacity: 1, scale: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.9, x: -100 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    drag={true}
-                    dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                    onDragEnd={(e, { offset, velocity }) => {
-                      // Horizontal Swipes (80-90% threshold for action)
-                      if (offset.x > 250) {
-                        handleSwipeRight(college.id);
-                      } else if (offset.x < -250) {
-                        handleSwipeLeft();
-                      }
-                      
-                      // Vertical Swipe (60% upward threshold)
-                      if (offset.y < -150) {
-                        onSelectCollege(college);
-                      }
-                    }}
-                    className="bg-white w-full rounded-[2.5rem] shadow-xl overflow-hidden text-slate-900 border border-slate-100 relative cursor-grab active:cursor-grabbing"
-                  >
+                      custom={swipeDirection}
+                      variants={{
+                        initial: { opacity: 0, scale: 0.94, y: 12, rotate: 0 },
+                        animate: { opacity: 1, scale: 1, y: 0, x: 0, rotate: 0 },
+                        exit: (customDir) => {
+                          if (customDir === "left") {
+                            return { x: -650, rotate: -28, opacity: 0, scale: 0.8, transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } };
+                          }
+                          if (customDir === "right") {
+                            return { x: 650, rotate: 28, opacity: 0, scale: 0.8, transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } };
+                          }
+                          if (customDir === "up") {
+                            return { y: -650, opacity: 0, scale: 1.05, transition: { duration: 0.35, ease: [0.32, 0.72, 0, 1] } };
+                          }
+                          return { opacity: 0, scale: 0.85, x: -500, rotate: -20, transition: { duration: 0.35 } };
+                        }
+                      }}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={{ type: "spring", stiffness: 340, damping: 24 }}
+                      drag={true}
+                      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                      dragElastic={0.8}
+                      onDragEnd={(e, { offset }) => {
+                        // Horizontal Swipes
+                        if (offset.x > 140) {
+                          handleSwipeRight(college.id);
+                        } else if (offset.x < -140) {
+                          handleSwipeLeft();
+                        }
+                        
+                        // Vertical Swipe Up
+                        if (offset.y < -120) {
+                          setSwipeDirection("up");
+                          onSelectCollege(college);
+                        }
+                      }}
+                      className="bg-white w-full rounded-[2.5rem] shadow-2xl overflow-hidden text-slate-900 border border-slate-100 relative cursor-grab active:cursor-grabbing z-10"
+                    >
                       {/* Heart Animation Overlay */}
                       <AnimatePresence>
                         {showHeartAnimation && (
@@ -890,8 +961,11 @@ export function StudentDashboard({
                         {/* Remove / View Details text button */}
                         <div className="text-center">
                           <button 
-                            onClick={() => onSelectCollege(college)}
-                            className="text-slate-400 font-bold text-xs flex items-center justify-center space-x-1 w-full"
+                            onClick={() => {
+                              setSwipeDirection("up");
+                              onSelectCollege(college);
+                            }}
+                            className="text-slate-400 font-bold text-xs flex items-center justify-center space-x-1 w-full hover:text-rose-500 transition-colors"
                           >
                             <span>ℹ️ Info & Specs</span>
                           </button>
@@ -900,28 +974,31 @@ export function StudentDashboard({
                     </motion.div>
                   );
                 })() : (
-                  <div className="bg-white w-full rounded-[2.5rem] shadow-xl p-10 text-center border border-slate-100">
+                  <div className="bg-white w-full rounded-[2.5rem] shadow-xl p-10 text-center border border-slate-100 z-10 relative">
                     <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Sparkles className="h-10 w-10 text-rose-500" />
                     </div>
                     <h3 className="text-xl font-black text-slate-900 mb-2">No more matches!</h3>
                     <p className="text-slate-500 text-sm mb-6">You have swiped through all available colleges for your criteria.</p>
                     <button 
-                      onClick={() => setSwipeIndex(0)}
-                      className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold active:scale-95 transition-all"
+                      onClick={() => {
+                        setSwipeDirection(null);
+                        setSwipeIndex(0);
+                      }}
+                      className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold active:scale-95 transition-all shadow-lg shadow-rose-500/20"
                     >
                       Start Over
                     </button>
                   </div>
                 )}
+                </AnimatePresence>
 
                 {/* Bottom Swipe Actions */}
-                </AnimatePresence>
                 {swipeIndex < processedColleges.length && (
-                  <div className="flex justify-between items-center mt-6 px-4">
+                  <div className="flex justify-between items-center mt-6 px-4 z-20 relative">
                     <button 
                       onClick={handleSwipeLeft}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-slate-400 hover:text-rose-500 active:scale-90 transition-all"
+                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-slate-400 hover:text-rose-500 active:scale-90 transition-all cursor-pointer"
                     >
                       <span className="text-2xl font-light">✕</span>
                     </button>
@@ -930,7 +1007,7 @@ export function StudentDashboard({
                     </div>
                     <button 
                       onClick={() => handleSwipeRight(processedColleges[swipeIndex].id)}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-rose-500 active:scale-90 transition-all"
+                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-rose-500 active:scale-90 transition-all cursor-pointer"
                     >
                       <Heart className={`h-7 w-7 ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500' : ''}`} />
                     </button>
@@ -965,36 +1042,8 @@ export function StudentDashboard({
                     <Share2 className="h-4 w-4" />
                   </button>
                   <button 
-                    onClick={async () => {
-                      if (!aiReport) {
-                        setLoadingAi(true);
-                        setShowAiModal(true);
-                        try {
-                          const res = await fetch("/api/ai/predict", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              cetRank: Number(cetRank),
-                              category,
-                              courses: selectedCourses
-                             })
-                          });
-                          const data = await res.json();
-                          if (data.prediction) {
-                            setAiReport(data.prediction);
-                          } else {
-                            setAiReport("### ❌ Prediction Error\n\nFailed to generate prediction report. Please try again.");
-                          }
-                        } catch (err: any) {
-                          setAiReport(`### ❌ Connection Interrupted\n\nFailed to connect with AI Counselor. Error: ${err.message}`);
-                        } finally {
-                          setLoadingAi(false);
-                        }
-                      } else {
-                        handleDownloadPDF();
-                      }
-                    }}
-                    className="p-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-xl transition-all cursor-pointer"
+                    onClick={handleDownloadPDF}
+                    className="p-2.5 bg-rose-500 hover:bg-rose-600 border border-rose-500 text-white rounded-xl transition-all cursor-pointer shadow-md shadow-rose-500/20 active:scale-95"
                     title="Download Official Strategy PDF"
                   >
                     <Download className="h-4 w-4" />

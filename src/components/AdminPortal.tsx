@@ -83,13 +83,20 @@ export default function AdminPortal({
   const [newDcetCutoff, setNewDcetCutoff] = useState("");
   const [newCutoffRound, setNewCutoffRound] = useState("R1");
   
-  // Three categories as requested
-  const [cat1Name, setCat1Name] = useState("General");
+  // Three categories (General, OBC, SC/ST) with separate KCET & DCET cutoffs
+  const [cat1Name] = useState("General");
   const [cat1Cutoff, setCat1Cutoff] = useState("");
-  const [cat2Name, setCat2Name] = useState("OBC");
+  const [cat1DcetCutoff, setCat1DcetCutoff] = useState("");
+  
+  const [cat2Name] = useState("OBC");
   const [cat2Cutoff, setCat2Cutoff] = useState("");
-  const [cat3Name, setCat3Name] = useState("SC/ST");
+  const [cat2DcetCutoff, setCat2DcetCutoff] = useState("");
+  
+  const [cat3Name] = useState("SC/ST");
   const [cat3Cutoff, setCat3Cutoff] = useState("");
+  const [cat3DcetCutoff, setCat3DcetCutoff] = useState("");
+
+  const [editingCourseIdx, setEditingCourseIdx] = useState<number | null>(null);
 
   // UI Statuses
   const [viewMode, setViewMode] = useState<'colleges'|'students'>('colleges');
@@ -148,12 +155,95 @@ export default function AdminPortal({
 
   const fetchStudents = async () => {
     try {
-      const { data, error } = await supabase.from('profiles').select('*');
-      if (error) throw error;
-      setStudents(data || []);
+      let loaded: StudentProfile[] = [];
+
+      // 1. Try fetching from backend API endpoint
+      try {
+        const res = await fetch('/api/admin/students');
+        if (res.ok) {
+          const apiData = await res.json();
+          if (apiData.students && Array.isArray(apiData.students)) {
+            loaded = apiData.students.map((p: any) => ({
+              email: p.email || "",
+              firstName: p.firstName || p.first_name || "Student",
+              lastName: p.lastName || p.last_name || "",
+              cetRank: p.cetRank || p.cet_rank,
+              dcetScore: p.dcetScore || p.dcet_score,
+              examScore: p.examScore || p.exam_score,
+              courses: p.courses || [],
+              favorites: p.favorites || [],
+              isVerified: p.isVerified ?? p.is_verified ?? true
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn("Backend admin students fetch warning:", e);
+      }
+
+      // 2. Try fetching from Supabase profiles as backup/complement
+      try {
+        const { data, error } = await supabase.from('profiles').select('*');
+        if (!error && data && data.length > 0) {
+          data.forEach((p: any) => {
+            if (p.email && !loaded.some(l => l.email.toLowerCase() === p.email.toLowerCase())) {
+              loaded.push({
+                email: p.email || "",
+                firstName: p.first_name || p.firstName || "Student",
+                lastName: p.last_name || p.lastName || "",
+                cetRank: p.cet_rank || p.cetRank,
+                dcetScore: p.dcet_score || p.dcetScore,
+                examScore: p.exam_score || p.examScore,
+                courses: p.courses || [],
+                favorites: p.favorites || [],
+                isVerified: p.is_verified ?? p.isVerified ?? true
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Supabase profiles fetch warning:", e);
+      }
+
+      // 3. Try recovering local session student if registered by email
+      const localSaved = localStorage.getItem("predictor_student");
+      if (localSaved) {
+        try {
+          const parsed = JSON.parse(localSaved);
+          if (parsed && parsed.email && !loaded.some(l => l.email.toLowerCase() === parsed.email.toLowerCase())) {
+            loaded.push(parsed);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // STRICT FILTER: Show ONLY genuine students who logged in via email
+      // Filter out guest accounts (emails starting with guest_ or ending with @predictor.local)
+      const emailStudentsOnly = loaded.filter(s => {
+        if (!s.email) return false;
+        const e = s.email.toLowerCase().trim();
+        return !e.startsWith("guest_") && !e.endsWith("@predictor.local");
+      });
+
+      setStudents(emailStudentsOnly);
     } catch (err: any) {
       console.error("Error fetching students:", err);
     }
+  };
+
+  const resetCourseSubForm = () => {
+    setNewCourseName("");
+    setNewCourseFees("");
+    setNewCourseAvgPkg("");
+    setNewCourseHiPkg("");
+    setNewCutoffRound("R1");
+    setCat1Cutoff("");
+    setCat1DcetCutoff("");
+    setCat2Cutoff("");
+    setCat2DcetCutoff("");
+    setCat3Cutoff("");
+    setCat3DcetCutoff("");
+    setEditingCourseIdx(null);
   };
 
   const resetForm = () => {
@@ -171,15 +261,7 @@ export default function AdminPortal({
     setImage4("");
     setImage5("");
     setCoursesList([]);
-    setNewCourseName("");
-    setNewCourseFees("");
-    setNewCourseAvgPkg("");
-    setNewCourseHiPkg("");
-    setNewDcetCutoff("");
-    setNewCutoffRound("R1");
-    setCat1Cutoff("");
-    setCat2Cutoff("");
-    setCat3Cutoff("");
+    resetCourseSubForm();
     setIsEditing(false);
     setErrorMsg("");
   };
@@ -202,7 +284,32 @@ export default function AdminPortal({
     setIsEditing(true);
     setErrorMsg("");
     setSuccessMsg("");
+    resetCourseSubForm();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleEditCourseInList = (idx: number) => {
+    const c = coursesList[idx];
+    if (!c) return;
+    setEditingCourseIdx(idx);
+    setNewCourseName(c.courseName || "");
+    setNewCourseFees(c.fees ? String(c.fees) : "");
+    setNewCourseAvgPkg(c.averagePackage ? String(c.averagePackage) : "");
+    setNewCourseHiPkg(c.highestPackage ? String(c.highestPackage) : "");
+    setNewCutoffRound(c.cutoffRound || `R${c.round || 1}`);
+
+    const genCat = c.categories?.find(cat => cat.name === "General");
+    const obcCat = c.categories?.find(cat => cat.name === "OBC");
+    const scstCat = c.categories?.find(cat => cat.name === "SC/ST");
+
+    setCat1Cutoff(genCat?.cutoff ? String(genCat.cutoff) : c.cutoffRank ? String(c.cutoffRank) : "");
+    setCat1DcetCutoff(genCat?.dcetCutoff ? String(genCat.dcetCutoff) : c.dcetCutoffRank ? String(c.dcetCutoffRank) : "");
+
+    setCat2Cutoff(obcCat?.cutoff ? String(obcCat.cutoff) : "");
+    setCat2DcetCutoff(obcCat?.dcetCutoff ? String(obcCat.dcetCutoff) : "");
+
+    setCat3Cutoff(scstCat?.cutoff ? String(scstCat.cutoff) : "");
+    setCat3DcetCutoff(scstCat?.dcetCutoff ? String(scstCat.dcetCutoff) : "");
   };
 
   const handleAddCourseToList = () => {
@@ -211,6 +318,13 @@ export default function AdminPortal({
       return;
     }
 
+    const genCut = Number(cat1Cutoff) || 0;
+    const genDcetCut = cat1DcetCutoff ? Number(cat1DcetCutoff) : undefined;
+    const obcCut = Number(cat2Cutoff) || 0;
+    const obcDcetCut = cat2DcetCutoff ? Number(cat2DcetCutoff) : undefined;
+    const scstCut = Number(cat3Cutoff) || 0;
+    const scstDcetCut = cat3DcetCutoff ? Number(cat3DcetCutoff) : undefined;
+
     const cObj: CollegeCourse = {
       courseName: newCourseName.trim(),
       fees: Number(newCourseFees) || 0,
@@ -218,24 +332,24 @@ export default function AdminPortal({
       highestPackage: Number(newCourseHiPkg) || 0,
       round: newCutoffRound === "R2" ? 2 : newCutoffRound === "R3" ? 3 : 1,
       cutoffRound: newCutoffRound || "R1",
-      cutoffRank: Number(cat1Cutoff) || 0,
-      dcetCutoffRank: newDcetCutoff ? Number(newDcetCutoff) : undefined,
+      cutoffRank: genCut,
+      dcetCutoffRank: genDcetCut,
       categories: [
-        { name: cat1Name, cutoff: Number(cat1Cutoff) || 0, dcetCutoff: newDcetCutoff ? Number(newDcetCutoff) : undefined },
-        { name: cat2Name, cutoff: Number(cat2Cutoff) || 0 },
-        { name: cat3Name, cutoff: Number(cat3Cutoff) || 0 }
+        { name: "General", cutoff: genCut, dcetCutoff: genDcetCut },
+        { name: "OBC", cutoff: obcCut, dcetCutoff: obcDcetCut },
+        { name: "SC/ST", cutoff: scstCut, dcetCutoff: scstDcetCut }
       ]
     };
-    setCoursesList([...coursesList, cObj]);
-    setNewCourseName("");
-    setNewCourseFees("");
-    setNewCourseAvgPkg("");
-    setNewCourseHiPkg("");
-    setNewDcetCutoff("");
-    setNewCutoffRound("R1");
-    setCat1Cutoff("");
-    setCat2Cutoff("");
-    setCat3Cutoff("");
+
+    if (editingCourseIdx !== null) {
+      const updated = [...coursesList];
+      updated[editingCourseIdx] = cObj;
+      setCoursesList(updated);
+    } else {
+      setCoursesList([...coursesList, cObj]);
+    }
+
+    resetCourseSubForm();
     setErrorMsg("");
   };
 
@@ -444,24 +558,57 @@ export default function AdminPortal({
                   </h3>
                   
                   {coursesList.length > 0 && (
-                    <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                      {coursesList.map((c, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl">
-                          <div className="min-w-0">
-                            <span className="block text-white font-bold text-xs truncate">{c.courseName}</span>
-                            <span className="block text-[10px] text-slate-300 font-mono mt-0.5">
-                              {c.cutoffRound || `R${c.round || 1}`} | CET: #{c.cutoffRank} {c.dcetCutoffRank ? `| DCET: #${c.dcetCutoffRank}` : ""} | Avg: {c.averagePackage || 0} LPA | Max: {c.highestPackage || 0} LPA
-                            </span>
+                    <div className="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar">
+                      {coursesList.map((c, i) => {
+                        const genCat = c.categories?.find(cat => cat.name === "General");
+                        const obcCat = c.categories?.find(cat => cat.name === "OBC");
+                        const scstCat = c.categories?.find(cat => cat.name === "SC/ST");
+
+                        const genKCET = genCat?.cutoff || c.cutoffRank || "-";
+                        const genDCET = genCat?.dcetCutoff || c.dcetCutoffRank || "-";
+
+                        const obcKCET = obcCat?.cutoff || "-";
+                        const obcDCET = obcCat?.dcetCutoff || "-";
+
+                        const scstKCET = scstCat?.cutoff || "-";
+                        const scstDCET = scstCat?.dcetCutoff || "-";
+
+                        return (
+                          <div key={i} className={`flex items-center justify-between p-3 border rounded-xl transition-all ${editingCourseIdx === i ? "bg-rose-500/10 border-rose-500" : "bg-white/5 border-white/10"}`}>
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-white font-bold text-xs truncate">{c.courseName}</span>
+                              <div className="text-[10px] text-slate-300 font-mono mt-0.5 space-y-0.5">
+                                <div>Round: {c.cutoffRound || `R${c.round || 1}`} | Fees: ₹{(c.fees / 1000).toFixed(0)}k | Avg: {c.averagePackage || 0} LPA</div>
+                                <div className="text-emerald-400">KCET Cutoffs — Gen: #{genKCET} | OBC: #{obcKCET} | SC/ST: #{scstKCET}</div>
+                                <div className="text-indigo-400">DCET Cutoffs — Gen: #{genDCET} | OBC: #{obcDCET} | SC/ST: #{scstDCET}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1 shrink-0 ml-2">
+                              <button type="button" onClick={() => handleEditCourseInList(i)} className="text-blue-400 p-1.5 hover:bg-blue-500/10 rounded-lg transition-all cursor-pointer" title="Edit Course Branch">
+                                <Edit3 className="h-4 w-4" />
+                              </button>
+                              <button type="button" onClick={() => handleRemoveCourseFromList(i)} className="text-rose-400 p-1.5 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer" title="Delete Course Branch">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
-                          <button type="button" onClick={() => handleRemoveCourseFromList(i)} className="text-rose-400 p-1 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
                   <div className="space-y-3 bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase text-rose-400 tracking-wider">
+                        {editingCourseIdx !== null ? `Editing Branch #${editingCourseIdx + 1}` : "Add New Branch & Category Cutoffs"}
+                      </span>
+                      {editingCourseIdx !== null && (
+                        <button type="button" onClick={resetCourseSubForm} className="text-[10px] text-slate-400 hover:text-white underline">
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
+
                     <div>
                       <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Course / Branch Name</label>
                       <input
@@ -514,30 +661,6 @@ export default function AdminPortal({
                       </div>
                     </div>
 
-                    {/* Cutoffs & Round Section */}
-                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
-                      <div>
-                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">CET Cutoff Rank</label>
-                        <input
-                          type="number"
-                          value={cat1Cutoff}
-                          onChange={(e) => setCat1Cutoff(e.target.value)}
-                          placeholder="CET Cutoff"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">DCET Rank Cutoff</label>
-                        <input
-                          type="number"
-                          value={newDcetCutoff}
-                          onChange={(e) => setNewDcetCutoff(e.target.value)}
-                          placeholder="DCET Cutoff"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs outline-hidden focus:border-rose-500 transition-all font-mono"
-                        />
-                      </div>
-                    </div>
-
                     {/* Cutoff Round R1, R2, R3 (Default R1) */}
                     <div>
                       <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Cutoff Round (Default R1)</label>
@@ -559,37 +682,112 @@ export default function AdminPortal({
                       </div>
                     </div>
 
-                    {/* Category Cutoffs (Optional Additional) */}
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <div>
-                        <span className="text-[9px] text-slate-500 uppercase font-black block mb-0.5">{cat2Name} Cutoff</span>
-                        <input
-                          type="number"
-                          value={cat2Cutoff}
-                          onChange={(e) => setCat2Cutoff(e.target.value)}
-                          placeholder="OBC Cutoff"
-                          className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 transition-all"
-                        />
+                    {/* KCET & DCET Category-wise Cutoffs Section */}
+                    <div className="space-y-2.5 pt-2 border-t border-white/10">
+                      <span className="text-[10px] text-rose-400 font-black uppercase tracking-wider block">
+                        Category-wise KCET & DCET Cutoff Ranks
+                      </span>
+
+                      {/* General Category */}
+                      <div className="bg-white/5 p-2.5 rounded-xl border border-white/5 space-y-1.5">
+                        <span className="text-[10px] text-emerald-400 font-extrabold uppercase tracking-wider block">General Category</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">KCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat1Cutoff}
+                              onChange={(e) => setCat1Cutoff(e.target.value)}
+                              placeholder="KCET General"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">DCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat1DcetCutoff}
+                              onChange={(e) => setCat1DcetCutoff(e.target.value)}
+                              placeholder="DCET General"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-[9px] text-slate-500 uppercase font-black block mb-0.5">{cat3Name} Cutoff</span>
-                        <input
-                          type="number"
-                          value={cat3Cutoff}
-                          onChange={(e) => setCat3Cutoff(e.target.value)}
-                          placeholder="SC/ST Cutoff"
-                          className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 transition-all"
-                        />
+
+                      {/* OBC Category */}
+                      <div className="bg-white/5 p-2.5 rounded-xl border border-white/5 space-y-1.5">
+                        <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider block">OBC Category</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">KCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat2Cutoff}
+                              onChange={(e) => setCat2Cutoff(e.target.value)}
+                              placeholder="KCET OBC"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">DCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat2DcetCutoff}
+                              onChange={(e) => setCat2DcetCutoff(e.target.value)}
+                              placeholder="DCET OBC"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* SC/ST Category */}
+                      <div className="bg-white/5 p-2.5 rounded-xl border border-white/5 space-y-1.5">
+                        <span className="text-[10px] text-purple-400 font-extrabold uppercase tracking-wider block">SC/ST Category</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">KCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat3Cutoff}
+                              onChange={(e) => setCat3Cutoff(e.target.value)}
+                              placeholder="KCET SC/ST"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">DCET Cutoff</label>
+                            <input
+                              type="number"
+                              value={cat3DcetCutoff}
+                              onChange={(e) => setCat3DcetCutoff(e.target.value)}
+                              placeholder="DCET SC/ST"
+                              className="w-full px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-hidden focus:border-rose-500 font-mono"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={handleAddCourseToList}
-                      className="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-rose-500/20 active:scale-98"
-                    >
-                      Add Course Branch
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleAddCourseToList}
+                        className="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all cursor-pointer shadow-lg shadow-rose-500/20 active:scale-98"
+                      >
+                        {editingCourseIdx !== null ? "Update Course Branch" : "Add Course Branch"}
+                      </button>
+                      {editingCourseIdx !== null && (
+                        <button
+                          type="button"
+                          onClick={resetCourseSubForm}
+                          className="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -760,49 +958,59 @@ export default function AdminPortal({
               <Edit3 className="h-5 w-5" />
             </button>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50/50">
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Student</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Verification</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Rank/Score</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Interests</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {students.map((s, i) => (
-                  <tr key={i} className="hover:bg-slate-50/30 transition-all">
-                    <td className="px-8 py-6">
-                      <span className="block font-black text-slate-900 text-lg">{s.firstName} {s.lastName}</span>
-                      <span className="block text-sm text-slate-400 font-medium">{s.email}</span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        s.isVerified ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
-                      }`}>
-                        {s.isVerified ? 'Verified' : 'Pending'}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="text-xl font-mono font-black text-slate-900">
-                        {s.cetRank || s.dcetScore || '-'}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex flex-wrap gap-1">
-                        {s.courses?.map((c, idx) => (
-                          <span key={idx} className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-md font-bold">
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
+          {students.length === 0 ? (
+            <div className="text-center py-20 px-6 bg-white/40 backdrop-blur-md rounded-[2.5rem] border border-dashed border-slate-200">
+              <Users className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <h4 className="text-lg font-black text-slate-800 mb-1">No Email Registered Students Yet</h4>
+              <p className="text-sm text-slate-400 font-medium max-w-md mx-auto">
+                Only students who log in via their email address are displayed here. Once a student verifies their email and logs in, their profile will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50/50">
+                    <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Student</th>
+                    <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Verification</th>
+                    <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Rank/Score</th>
+                    <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Interests</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {students.map((s, i) => (
+                    <tr key={i} className="hover:bg-slate-50/30 transition-all">
+                      <td className="px-8 py-6">
+                        <span className="block font-black text-slate-900 text-lg">{s.firstName} {s.lastName}</span>
+                        <span className="block text-sm text-slate-400 font-medium">{s.email}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          s.isVerified ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+                        }`}>
+                          {s.isVerified ? 'Verified' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="text-xl font-mono font-black text-slate-900">
+                          {s.cetRank || s.dcetScore || '-'}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex flex-wrap gap-1">
+                          {s.courses?.map((c, idx) => (
+                            <span key={idx} className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-md font-bold">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
