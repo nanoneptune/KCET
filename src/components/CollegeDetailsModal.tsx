@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, MapPin, Phone, Globe, DollarSign, Award, School, Heart, ChevronLeft, ChevronRight, Video, Sparkles } from "lucide-react";
+import { X, MapPin, Phone, Globe, DollarSign, Award, School, Heart, ChevronLeft, ChevronRight, Video, Sparkles, ZoomIn, ZoomOut, RotateCcw, Maximize2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { College } from "../types";
 import AutoPlayVideo from "./AutoPlayVideo";
@@ -18,17 +18,38 @@ export default function CollegeDetailsModal({
   onToggleFavorite
 }: CollegeDetailsModalProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1);
 
-  const handlePrevImage = () => {
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (college.images && college.images.length > 0) {
       setActiveImageIndex((prev) => (prev === 0 ? college.images.length - 1 : prev - 1));
+      setZoomScale(1);
     }
   };
 
-  const handleNextImage = () => {
+  const handleNextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (college.images && college.images.length > 0) {
       setActiveImageIndex((prev) => (prev === college.images.length - 1 ? 0 : prev + 1));
+      setZoomScale(1);
     }
+  };
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomScale(prev => Math.min(prev + 0.5, 3.5));
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomScale(prev => Math.max(prev - 0.5, 1));
+  };
+
+  const handleResetZoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setZoomScale(1);
   };
 
   const mapsQuery = `${college.name} ${college.locationAddress || college.place}`;
@@ -95,26 +116,38 @@ export default function CollegeDetailsModal({
           {/* Main Visual Carousel / Gallery */}
           {college.images && college.images.length > 0 && (
             <div className="space-y-3">
-              <div className="h-64 sm:h-80 w-full relative rounded-2xl overflow-hidden bg-slate-100 group">
+              <div 
+                className="h-64 sm:h-80 w-full relative rounded-2xl overflow-hidden bg-slate-100 group cursor-pointer"
+                onClick={() => {
+                  setIsZoomOpen(true);
+                  setZoomScale(1);
+                }}
+              >
                 <img
                   src={college.images[activeImageIndex]}
                   alt={`${college.name} Campus ${activeImageIndex + 1}`}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
                 />
                 
+                {/* Click to Zoom Hint Overlay */}
+                <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-md opacity-90 group-hover:opacity-100 transition-opacity">
+                  <ZoomIn className="h-3 w-3 text-rose-400" />
+                  <span>Click to Zoom Image</span>
+                </div>
+
                 {/* Carousel overlays */}
                 <button
                   id="details-carousel-prev"
                   onClick={handlePrevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md text-gray-700 hover:bg-white active:scale-90 transition-all cursor-pointer"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md text-gray-700 hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   id="details-carousel-next"
                   onClick={handleNextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md text-gray-700 hover:bg-white active:scale-90 transition-all cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md text-gray-700 hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -136,6 +169,103 @@ export default function CollegeDetailsModal({
                     }`}
                   >
                     <img src={img} alt="Thumbnail" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Full-Screen Campus Photo Lightbox / Zoom Viewer */}
+          {isZoomOpen && college.images && college.images.length > 0 && (
+            <div className="fixed inset-0 z-[300] bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 animate-in fade-in duration-200">
+              {/* Top Controls Header */}
+              <div className="w-full flex items-center justify-between text-white z-20">
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-white">{college.name}</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Image {activeImageIndex + 1} of {college.images.length} ({Math.round(zoomScale * 100)}% Zoom)</p>
+                </div>
+
+                {/* Zoom Action Toolbar */}
+                <div className="flex items-center space-x-2 bg-slate-900/80 border border-slate-700/80 px-3 py-1.5 rounded-full shadow-lg">
+                  <button
+                    type="button"
+                    onClick={handleZoomOut}
+                    className="p-1.5 text-slate-300 hover:text-white transition-all active:scale-90 cursor-pointer"
+                    title="Zoom Out"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetZoom}
+                    className="px-2 py-0.5 text-[10px] font-bold text-rose-400 hover:text-rose-300 transition-all cursor-pointer font-mono"
+                    title="Reset Zoom"
+                  >
+                    {Math.round(zoomScale * 100)}%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleZoomIn}
+                    className="p-1.5 text-slate-300 hover:text-white transition-all active:scale-90 cursor-pointer"
+                    title="Zoom In"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </button>
+                  <div className="w-px h-4 bg-slate-700 mx-1" />
+                  <button
+                    type="button"
+                    onClick={() => setIsZoomOpen(false)}
+                    className="p-1.5 text-slate-300 hover:text-rose-400 transition-all active:scale-90 cursor-pointer"
+                    title="Close Lightbox"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Center Zoom Viewport */}
+              <div className="flex-1 w-full relative flex items-center justify-center overflow-auto p-2 my-2">
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 border border-slate-700 shadow-xl transition-all active:scale-90 cursor-pointer"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+
+                <div className="overflow-auto max-w-full max-h-[75vh] flex items-center justify-center p-4">
+                  <img
+                    src={college.images[activeImageIndex]}
+                    alt={`${college.name} Zoomed View`}
+                    style={{ transform: `scale(${zoomScale})`, transition: 'transform 0.2s ease-out' }}
+                    className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl origin-center cursor-zoom-in"
+                    onClick={handleZoomIn}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 border border-slate-700 shadow-xl transition-all active:scale-90 cursor-pointer"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Bottom Thumbnail Track */}
+              <div className="flex gap-2 overflow-x-auto p-2 max-w-full z-20">
+                {college.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setZoomScale(1);
+                    }}
+                    className={`h-12 w-16 rounded-xl overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                      activeImageIndex === idx ? "border-rose-500 scale-105" : "border-slate-800 opacity-50"
+                    }`}
+                  >
+                    <img src={img} alt="Thumb" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

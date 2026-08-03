@@ -20,6 +20,7 @@ export default function App() {
 
   // Dialog details modal state
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
+  const [isVideoFullscreen, setIsVideoFullscreen] = useState(false);
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [adminPin, setAdminPin] = useState("");
@@ -289,34 +290,38 @@ export default function App() {
           />
         ) : currentUser ? (
           <>
-            {/* Minimalist Floating Controls */}
-            <div className="fixed top-6 left-6 z-[100] flex items-center space-x-3 pointer-events-auto">
-              <button
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`p-3 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer ${
-                  showFavoritesOnly ? "bg-rose-500 text-white" : "glass text-rose-500"
-                }`}
-                title={showFavoritesOnly ? "Show All Colleges" : "Show Favorites"}
-              >
-                <Heart className={`h-5 w-5 ${showFavoritesOnly ? "fill-white" : ""}`} />
-              </button>
-              {showFavoritesOnly && (
-                <span className="bg-rose-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-left-2">
-                  Favorites Only
-                </span>
-              )}
-            </div>
+            {/* Minimalist Floating Controls - hidden when info & details modal or fullscreen video is opened */}
+            {!selectedCollege && !isVideoFullscreen && (
+              <>
+                <div className="fixed top-3 left-3 sm:top-6 sm:left-6 z-[100] flex items-center space-x-2 sm:space-x-3 pointer-events-auto">
+                  <button
+                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                    className={`p-2.5 sm:p-3 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer ${
+                      showFavoritesOnly ? "bg-rose-500 text-white" : "glass text-rose-500"
+                    }`}
+                    title={showFavoritesOnly ? "Show All Colleges" : "Show Favorites"}
+                  >
+                    <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${showFavoritesOnly ? "fill-white" : ""}`} />
+                  </button>
+                  {showFavoritesOnly && (
+                    <span className="bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-left-2">
+                      Favorites Only
+                    </span>
+                  )}
+                </div>
 
-            <div className="fixed top-6 right-6 z-[100]">
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className="px-4 py-2.5 glass text-slate-700 hover:text-rose-500 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer flex items-center space-x-2 border border-white/60"
-                title="Exit Portal"
-              >
-                <LogOut className="h-4 w-4 text-rose-500" />
-                <span className="text-xs font-black uppercase tracking-wider">Exit</span>
-              </button>
-            </div>
+                <div className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[100]">
+                  <button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="px-3 py-2 sm:px-4 sm:py-2.5 glass text-slate-700 hover:text-rose-500 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer flex items-center space-x-1.5 sm:space-x-2 border border-white/60"
+                    title="Exit Portal"
+                  >
+                    <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500" />
+                    <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider">Exit</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Student Matched Workspace Module */}
             <StudentDashboard
@@ -326,6 +331,7 @@ export default function App() {
               onToggleFavorite={handleToggleFavoriteFromModal}
               onSelectCollege={setSelectedCollege}
               showFavoritesOnly={showFavoritesOnly}
+              onVideoFullscreenChange={setIsVideoFullscreen}
             />
           </>
         ) : (

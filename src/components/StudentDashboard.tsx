@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { 
   Search, Sliders, Heart, School, Sparkles, MapPin, DollarSign, Award, 
   BookOpen, CheckSquare, Square, Info, Compass, Loader2, ChevronDown, 
   ChevronUp, Zap, Target, TrendingUp, ListOrdered, Share2, Download, Filter,
   FileDown, Globe, RefreshCw, ExternalLink, X, ChevronLeft, ChevronRight, Video,
-  Star, RotateCcw, ShieldCheck
+  Star, RotateCcw, ShieldCheck, ZoomIn, ZoomOut, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { College, StudentProfile } from "../types";
@@ -20,6 +20,7 @@ interface StudentDashboardProps {
   onToggleFavorite: (collegeId: string) => Promise<void>;
   onSelectCollege: (college: College) => void;
   showFavoritesOnly: boolean;
+  onVideoFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 const CATEGORIES = ["General", "OBC", "SC/ST"];
@@ -31,10 +32,12 @@ export function StudentDashboard({
   onUpdateProfile,
   onToggleFavorite,
   onSelectCollege,
-  showFavoritesOnly
+  showFavoritesOnly,
+  onVideoFullscreenChange
 }: StudentDashboardProps) {
   // Wizard Step State
   const [step, setStep] = useState(1);
+  const [isVideoFullscreen, setIsVideoFullscreen] = useState(false);
   
   // Local profile editing states
   const [cetRank, setCetRank] = useState<string>(currentUser.cetRank?.toString() || "");
@@ -46,7 +49,39 @@ export function StudentDashboard({
   // Rank Type Switch (KCET vs DCET)
   const [rankType, setRankType] = useState<"KCET" | "DCET">("KCET");
 
-  // Min / Max Range Filters
+  // Touch Pinch-to-Zoom handlers for Mobile Gallery
+  const pinchTouchStartDist = useRef<number | null>(null);
+
+  const handleTouchStartPinch = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchTouchStartDist.current = dist;
+    }
+  };
+
+  const handleTouchMovePinch = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchTouchStartDist.current !== null) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const delta = dist - pinchTouchStartDist.current;
+      if (Math.abs(delta) > 4) {
+        setSlideshowZoomScale(prev => {
+          const next = prev + (delta > 0 ? 0.08 : -0.08);
+          return Math.min(4, Math.max(1, next));
+        });
+        pinchTouchStartDist.current = dist;
+      }
+    }
+  };
+
+  const handleTouchEndPinch = () => {
+    pinchTouchStartDist.current = null;
+  };
   const [minFees, setMinFees] = useState<number>(0);
   const [maxFees, setMaxFees] = useState<number>(300000);
   const [minCutoff, setMinCutoff] = useState<number>(0);
@@ -77,6 +112,7 @@ export function StudentDashboard({
   };
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [showSlideshow, setShowSlideshow] = useState(false);
+  const [slideshowZoomScale, setSlideshowZoomScale] = useState(1);
   const [inAppSiteUrl, setInAppSiteUrl] = useState<string | null>(null);
   const [interactWithIframe, setInteractWithIframe] = useState(false);
   const [reportViewMode, setReportViewMode] = useState<"pdf" | "raw">("pdf");
@@ -433,13 +469,31 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
         if (maxCutoff < 150000 && cutoff > maxCutoff) return false;
 
         if (selectedCourses.length > 0) {
-          return selectedCourses.some(sc =>
-            r.courseName.toLowerCase().includes(sc.toLowerCase()) || sc.toLowerCase().includes(r.courseName.toLowerCase())
-          );
+          return selectedCourses.some(sc => {
+            const scLower = sc.toLowerCase().trim();
+            const rLower = r.courseName.toLowerCase().trim();
+
+            if (rLower === scLower || rLower.includes(scLower) || scLower.includes(rLower)) return true;
+
+            // Strip fluff words for smart token matching
+            const clean = (str: string) => str.replace(/\b(engineering|bachelor|degree|of|in|science|technology|integrated|department|course|and|&)\b/gi, " ").replace(/[()]/g, "").trim();
+            const scClean = clean(scLower);
+            const rClean = clean(rLower);
+
+            if (scClean && rClean) {
+              const scTokens = scClean.split(/\s+/).filter(t => t.length >= 2);
+              const rTokens = rClean.split(/\s+/).filter(t => t.length >= 2);
+              if (scTokens.length > 0 && rTokens.length > 0) {
+                return scTokens.some(st => rTokens.some(rt => st === rt || st.includes(rt) || rt.includes(st)));
+              }
+            }
+            return false;
+          });
         }
         return true;
       }) || [];
 
+      // Exclude college completely if none of its courses match the branch selection or filters
       if (matchedCourses.length === 0) return null;
 
       // Filter by favorites if requested
@@ -473,19 +527,6 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
       return { ...college, probability, bestMatchedCourse, effectiveCutoff };
     })
     .filter((c): c is (College & { probability: number; bestMatchedCourse: any; effectiveCutoff: number }) => c !== null);
-
-    // Fallback: If filtered list is empty and we are NOT looking only at favorites, show colleges from database
-    if (list.length === 0 && !showFavoritesOnly) {
-      list = colleges.map(college => {
-        const bestMatchedCourse = college.courses?.[0] || { courseName: "General Engineering", cutoffRank: 50000, averagePackage: college.averagePackage || 6.5, fees: college.fees || 95000 };
-        return {
-          ...college,
-          probability: 70,
-          bestMatchedCourse,
-          effectiveCutoff: bestMatchedCourse.cutoffRank || 50000
-        };
-      });
-    }
 
     return list.sort((a, b) => b.probability - a.probability);
   }, [colleges, currentUser.favorites, showFavoritesOnly, collegeSearch, selectedCourses, category, cetRank, rankType, minFees, maxFees, minCutoff, maxCutoff]);
@@ -525,7 +566,7 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
   }, [currentCollege]);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 pb-28 md:pb-12 text-slate-100">
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 pt-12 sm:pt-14 md:pt-12 pb-24 md:pb-12 text-slate-100 overflow-y-auto">
       
       {/* DESKTOP GLASSMORPHIC STEP CONTROLLER */}
       <div className="hidden md:flex items-center justify-between mb-12 w-full backdrop-blur-md bg-slate-100 border border-slate-100 p-2.5 rounded-[2rem] shadow-xl shadow-black/25">
@@ -620,32 +661,32 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="w-full max-w-sm mx-auto relative pt-1 sm:pt-4 pb-20 md:pb-24"
           >
             {/* STEP 01: RANK & CATEGORY */}
-            <div className="backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-black/40 text-center">
-              <label className="block text-[11px] font-black text-rose-400 uppercase tracking-[0.25em] mb-8">
+            <div className="backdrop-blur-md bg-white/95 border border-slate-100 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 md:p-12 shadow-2xl shadow-rose-900/10 text-center">
+              <label className="block text-[10px] sm:text-[11px] font-black text-rose-500 uppercase tracking-[0.2em] mb-4 sm:mb-8">
                 Step 01: Enter your Rank & Category
               </label>
               
-              <div className="max-w-xs mx-auto mb-10">
+              <div className="max-w-xs mx-auto mb-5 sm:mb-10">
                 <div className="relative">
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 text-2xl font-black text-rose-400/20">#</span>
+                  <span className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 text-xl sm:text-2xl font-black text-rose-400/30">#</span>
                   <input
                     type="text"
                     value={cetRank}
                     onChange={(e) => setCetRank(e.target.value.replace(/\D/g, ""))}
                     placeholder="Rank"
-                    className="w-full text-7xl font-black text-slate-900 placeholder:text-slate-800 border-none focus:ring-0 p-0 text-center tabular-nums outline-hidden"
+                    className="w-full text-5xl sm:text-7xl font-black text-slate-900 placeholder:text-slate-300 border-none focus:ring-0 p-0 text-center tabular-nums outline-hidden"
                   />
                 </div>
                 {/* KCET vs DCET Switch Button */}
-                <div className="mt-4 flex flex-col items-center">
-                  <div className="inline-flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                <div className="mt-2.5 sm:mt-4 flex flex-col items-center">
+                  <div className="inline-flex bg-slate-100/90 p-1 sm:p-1.5 rounded-2xl border border-slate-200/80 shadow-inner">
                     <button
                       type="button"
                       onClick={() => setRankType("KCET")}
-                      className={`px-6 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
+                      className={`px-4 py-1.5 sm:px-6 sm:py-2 text-[11px] sm:text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                         rankType === "KCET"
                           ? "bg-rose-500 text-white shadow-md shadow-rose-500/20 scale-102"
                           : "text-slate-500 hover:text-slate-900"
@@ -656,7 +697,7 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
                     <button
                       type="button"
                       onClick={() => setRankType("DCET")}
-                      className={`px-6 py-2 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
+                      className={`px-4 py-1.5 sm:px-6 sm:py-2 text-[11px] sm:text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                         rankType === "DCET"
                           ? "bg-rose-500 text-white shadow-md shadow-rose-500/20 scale-102"
                           : "text-slate-500 hover:text-slate-900"
@@ -665,43 +706,43 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
                       DCET Rank
                     </button>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-2 font-semibold">
+                  <p className="text-[10px] sm:text-[11px] text-slate-400 mt-1.5 font-semibold">
                     Selected Mode: <span className="text-rose-500 font-black">{rankType}</span> Counseling
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-rose-400/80 uppercase tracking-widest ml-1">Category</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-6 text-left">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-rose-500/90 uppercase tracking-widest ml-1">Category</label>
                   <div className="relative">
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="w-full appearance-none bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-slate-900 font-extrabold focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all cursor-pointer"
+                      className="w-full appearance-none bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 sm:px-6 sm:py-4 text-slate-900 font-extrabold text-xs sm:text-sm focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all cursor-pointer"
                     >
                       {CATEGORIES.map(cat => (
-                        <option key={cat} value={cat} className="bg-slate-900 text-slate-900">{cat}</option>
+                        <option key={cat} value={cat} className="bg-white text-slate-900 font-bold">{cat}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-rose-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-500 pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-rose-400/80 uppercase tracking-widest ml-1">Counseling Round</label>
-                  <div className="flex p-1 bg-slate-50 border border-slate-100 rounded-2xl">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-rose-500/90 uppercase tracking-widest ml-1">Counseling Round</label>
+                  <div className="flex p-1 bg-slate-50 border border-slate-200/80 rounded-2xl">
                     {ROUNDS.map(r => (
                       <button
                         key={r}
                         onClick={() => setRound(r)}
-                        className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                        className={`flex-1 py-2.5 sm:py-3.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
                           round === r 
                           ? "bg-rose-500 text-white shadow-md shadow-rose-500/10 font-extrabold" 
-                          : "text-slate-500 hover:text-rose-300"
+                          : "text-slate-500 hover:text-rose-400"
                         }`}
                       >
-                        {r}
+                        Round {r}
                       </button>
                     ))}
                   </div>
@@ -711,7 +752,7 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
               <button
                 disabled={!cetRank}
                 onClick={() => setStep(2)}
-                className="mt-10 w-full py-5 bg-rose-500 hover:bg-rose-600 disabled:bg-slate-100 disabled:text-slate-600 text-white rounded-2xl font-black transition-all flex items-center justify-center space-x-2 group shadow-lg shadow-rose-500/10 hover:shadow-rose-500/20 active:scale-99"
+                className="mt-5 sm:mt-10 w-full py-4 sm:py-5 bg-rose-500 hover:bg-rose-600 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-2xl font-black transition-all flex items-center justify-center space-x-2 group shadow-lg shadow-rose-500/20 active:scale-98 cursor-pointer"
               >
                 <span>Continue to Branches</span>
                 <span className="group-hover:translate-x-1 transition-transform stroke-[2.5]">→</span>
@@ -726,64 +767,67 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="w-full max-w-sm mx-auto relative pt-1 sm:pt-4 pb-16 md:pb-24 h-[calc(100vh-5.5rem)] md:h-auto flex flex-col justify-between overflow-hidden"
           >
             {/* STEP 02: BRANCHES */}
-            <div className="backdrop-blur-md bg-white/90 border border-slate-100 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-black/40">
-              <div className="flex items-center justify-between mb-8">
-                <label className="block text-[11px] font-black text-rose-400 uppercase tracking-[0.25em]">
-                  Step 02: Pick your preferred branches
-                </label>
-                <div className="text-[11px] font-black text-rose-300 bg-rose-500/10 border border-rose-500/25 px-3.5 py-1.5 rounded-full">
-                  {selectedCourses.length} Selected
+            <div className="backdrop-blur-md bg-white/95 border border-slate-100 rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl shadow-rose-900/10 flex flex-col h-full overflow-hidden justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4 sm:mb-8">
+                  <label className="block text-[10px] sm:text-[11px] font-black text-rose-500 uppercase tracking-[0.2em]">
+                    Step 02: Pick your preferred branches
+                  </label>
+                  <div className="text-[10px] sm:text-[11px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-full">
+                    {selectedCourses.length} Selected
+                  </div>
+                </div>
+
+                <div className="relative mb-3 sm:mb-6">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search branches (e.g. CSE, Civil...)"
+                    value={courseSearch}
+                    onChange={(e) => setCourseSearch(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 sm:py-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all"
+                  />
+                </div>
+
+                {/* Branch options container - ONLY this list scrolls */}
+                <div className="flex flex-wrap gap-2 max-h-[38vh] sm:max-h-[46vh] overflow-y-auto p-1.5 scrollbar-thin">
+                  {dynamicAvailableCourses.filter(c => c.toLowerCase().includes(courseSearch.toLowerCase())).map(course => {
+                    const isSelected = selectedCourses.includes(course);
+                    const isHot = ["Computer Science", "Information Science", "AI & DS"].some(h => course.includes(h));
+                    return (
+                      <button
+                        key={course}
+                        onClick={() => handleCourseToggle(course)}
+                        className={`flex items-center space-x-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl text-xs font-bold transition-all border cursor-pointer ${
+                          isSelected
+                          ? "bg-rose-500 border-rose-500 text-white font-extrabold shadow-lg shadow-rose-500/15"
+                          : "bg-slate-100 border-slate-100 text-slate-600 hover:border-rose-500/50 hover:text-rose-400"
+                        }`}
+                      >
+                        {isHot && <Zap className={`h-3 w-3 ${isSelected ? "text-rose-900 animate-pulse" : "text-rose-500"}`} />}
+                        <span>{course}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="relative mb-6">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search branches (e.g. CSE, Civil...)"
-                  value={courseSearch}
-                  onChange={(e) => setCourseSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 placeholder:text-slate-600 focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-hidden transition-all"
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-2 max-h-96 overflow-y-auto p-2 scrollbar-hide">
-                {dynamicAvailableCourses.filter(c => c.toLowerCase().includes(courseSearch.toLowerCase())).map(course => {
-                  const isSelected = selectedCourses.includes(course);
-                  const isHot = ["Computer Science", "Information Science", "AI & DS"].some(h => course.includes(h));
-                  return (
-                    <button
-                      key={course}
-                      onClick={() => handleCourseToggle(course)}
-                      className={`flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all border cursor-pointer ${
-                        isSelected
-                        ? "bg-rose-500 border-rose-500 text-white font-extrabold shadow-lg shadow-rose-500/15"
-                        : "bg-slate-100 border-slate-100 text-slate-600 hover:border-rose-500/50 hover:text-rose-400"
-                      }`}
-                    >
-                      {isHot && <Zap className={`h-3 w-3 ${isSelected ? "text-rose-900 animate-pulse" : "text-rose-500"}`} />}
-                      <span>{course}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-10">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 pt-2 border-t border-slate-100">
                 <button
                   onClick={() => setStep(1)}
-                  className="py-5 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-2xl font-bold transition-all cursor-pointer active:scale-99"
+                  className="py-3.5 sm:py-4 bg-slate-100 hover:bg-slate-200 border border-slate-100 text-slate-600 rounded-2xl font-bold text-xs sm:text-sm transition-all cursor-pointer active:scale-99"
                 >
                   Back
                 </button>
                 <button
                   onClick={() => setStep(3)}
-                  className="py-3.5 px-6 glass text-rose-500 border border-white/80 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center space-x-2 group shadow-sm active:scale-95 cursor-pointer"
+                  className="py-3.5 sm:py-4 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center space-x-1.5 shadow-lg shadow-rose-500/20 active:scale-98 cursor-pointer"
                 >
                   <span>Predict My Colleges</span>
-                  <span className="group-hover:translate-x-1 transition-transform stroke-[2.5]">→</span>
+                  <span className="stroke-[2.5]">→</span>
                 </button>
               </div>
             </div>
@@ -796,109 +840,21 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="w-full max-w-sm mx-auto relative pt-4 pb-24"
+            className="w-full max-w-full sm:max-w-md mx-auto relative pt-0 sm:pt-2 pb-16 md:pb-24 px-0 sm:px-4"
           >
-            {/* KAMA STYLE HEADER BACKGROUND */}
-            <div className="absolute top-[-100px] left-[-20px] right-[-20px] h-[400px] bg-gradient-to-br from-rose-500 to-pink-500 rounded-b-[3rem] z-0 pointer-events-none" />
-
             <div className="relative z-10">
-              {/* Header Matches */}
-              <div className="px-2 mb-4 text-center">
-                <h3 className="text-white font-black text-2xl mb-1 tracking-tight">Your Matches</h3>
-                <p className="text-white/90 text-sm font-bold">{processedColleges.length} colleges available</p>
-              </div>
-
-              {/* Range Filters Panel: Borderless Simple Draggers */}
-              <div className="py-2 mb-6 text-white space-y-3">
-                {/* Fees Drag Line Slider */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-white/90">
-                    <span className="text-[11px] uppercase tracking-wider font-extrabold text-white/80">Fees Limit</span>
-                    <span className="font-mono text-white font-black text-xs bg-white/10 px-2.5 py-1 rounded-md shadow-inner">
-                      Up to {formatFeeLimitDisplay(maxFees)} / yr
-                    </span>
+              {/* Top Middle College Match & Count Badge */}
+              {!isVideoFullscreen && (
+                <div className="flex justify-center mb-3 pt-1">
+                  <div className="bg-white/90 backdrop-blur-md shadow-sm text-slate-900 px-4 py-1.5 rounded-full flex items-center space-x-1.5 font-black border border-rose-100">
+                    <Sparkles className="w-4 h-4 text-rose-500 fill-rose-500" />
+                    <span className="text-rose-600 font-black text-sm sm:text-base">{processedColleges.length} matches</span>
                   </div>
-                  <input
-                    type="range"
-                    min="20000"
-                    max="300000"
-                    step="5000"
-                    value={maxFees}
-                    onChange={(e) => {
-                      setMinFees(0);
-                      setMaxFees(Number(e.target.value));
-                    }}
-                    className="w-full appearance-none h-2 bg-white/30 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-lg"
-                  />
                 </div>
+              )}
 
-                {/* Cutoff Rank Drag Line Slider */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-xs font-bold text-white/90">
-                    <span className="text-[11px] uppercase tracking-wider font-extrabold text-white/80">{rankType} Cutoff Rank</span>
-                    <span className="font-mono text-white font-black text-xs bg-white/10 px-2.5 py-1 rounded-md shadow-inner">
-                      Up to #{maxCutoff.toLocaleString()}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1000"
-                    max="150000"
-                    step="1000"
-                    value={maxCutoff}
-                    onChange={(e) => {
-                      setMinCutoff(0);
-                      setMaxCutoff(Number(e.target.value));
-                    }}
-                    className="w-full appearance-none h-2 bg-white/30 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:shadow-lg"
-                  />
-                </div>
-              </div>
-
-              {/* CARD CONTAINER WITH REALISTIC STACK LAYER */}
-              <div className="relative mt-8 min-h-[580px]">
-                {/* Floating pill */}
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 bg-white shadow-md text-rose-500 px-4 py-1.5 rounded-full flex items-center space-x-1 font-bold text-xs border border-rose-100">
-                  <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-                  <span>College Match</span>
-                </div>
-
-                {/* BACKGROUND STACK PREVIEW CARD */}
-                {swipeIndex + 1 < processedColleges.length && (() => {
-                  const nextCollege = processedColleges[swipeIndex + 1];
-                  const nextHasImages = nextCollege.images && nextCollege.images.length > 0;
-                  const nextImgUrl = nextHasImages ? nextCollege.images[0] : "";
-                  const nextBestCourse = nextCollege.bestMatchedCourse || {};
-                  return (
-                    <div
-                      key={nextCollege.id + "-stack-bg"}
-                      className="absolute inset-0 bg-white w-full rounded-[2.5rem] shadow-md overflow-hidden text-slate-900 border border-slate-100 pointer-events-none transform scale-[0.94] translate-y-3 opacity-60 z-0 transition-all duration-300"
-                    >
-                      <div className="h-72 w-full relative bg-slate-900 flex items-center justify-center overflow-hidden">
-                        {nextImgUrl ? (
-                          <img src={nextImgUrl} className="w-full h-full object-cover" alt="" />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-rose-600 flex flex-col items-center justify-center text-white/40">
-                            <School className="w-20 h-20 opacity-40" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-                        <div className="absolute bottom-4 left-4 right-4 text-white">
-                          <h2 className="text-2xl font-black leading-tight drop-shadow-md">{nextCollege.name}</h2>
-                          <div className="flex items-center space-x-1 mt-1 text-sm font-semibold opacity-90">
-                            <MapPin className="w-4 h-4" />
-                            <span>{nextCollege.place} • {nextCollege.probability}% Match</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-6 opacity-60">
-                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5 line-clamp-2">
-                          {nextCollege.details || `Top college offering ${nextBestCourse.courseName || "various courses"} for your rank.`}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })()}
+              {/* CARD CONTAINER - Filled in mobile view */}
+              <div className="relative min-h-[500px] h-[calc(100vh-210px)] max-h-[660px] flex flex-col justify-between">
 
                 <AnimatePresence mode="popLayout" custom={swipeDirection}>
                 {swipeIndex < processedColleges.length ? (() => {
@@ -950,7 +906,7 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
                           onSelectCollege(college);
                         }
                       }}
-                      className="bg-white w-full rounded-[2.5rem] shadow-2xl overflow-hidden text-slate-900 border border-slate-100 relative cursor-grab active:cursor-grabbing z-10"
+                      className="bg-white w-full h-full rounded-none sm:rounded-[2.5rem] shadow-none sm:shadow-2xl overflow-hidden text-slate-900 border-0 sm:border border-slate-100 relative cursor-grab active:cursor-grabbing z-10 flex flex-col justify-between"
                     >
                       {/* Heart Animation Overlay */}
                       <AnimatePresence>
@@ -969,132 +925,223 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
 
                       {/* Image or Video Top Half with Slideshow Trigger */}
                       <div 
-                        className="h-72 w-full relative bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden group"
+                        className="h-44 sm:h-56 w-full shrink-0 relative bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden group"
                         onClick={() => setShowSlideshow(true)}
                       >
-                        {college.videoUrl ? (
-                          <AutoPlayVideo url={college.videoUrl} title={college.name} />
-                        ) : hasImages ? (
+                        {hasImages ? (
                           <img 
                             src={imgUrl}
                             className="w-full h-full object-cover absolute inset-0 transition-transform duration-700 group-hover:scale-110"
                             alt={college.name}
                           />
+                        ) : college.videoUrl ? (
+                          <AutoPlayVideo 
+                            url={college.videoUrl} 
+                            title={college.name} 
+                            onFullscreenChange={(fs) => {
+                              setIsVideoFullscreen(fs);
+                              onVideoFullscreenChange?.(fs);
+                            }}
+                          />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-rose-600 flex flex-col items-center justify-center text-white/50">
-                            <School className="w-24 h-24 mb-4 opacity-50" />
+                            <School className="w-16 h-16 mb-2 opacity-50" />
                             <span className="font-bold tracking-widest uppercase text-xs">Campus View</span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                         
                         {/* Slideshow / Video Hint */}
-                        <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/30 text-[10px] text-white font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                        <div className="absolute top-2.5 right-2.5 bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/30 text-[9px] text-white font-black uppercase tracking-widest opacity-90 group-hover:opacity-100 transition-opacity flex items-center space-x-1 z-20">
                           {college.videoUrl ? <Video className="w-3 h-3 text-rose-400" /> : null}
-                          <span>{college.videoUrl ? "Playing Video" : "View Gallery"}</span>
+                          <span>{college.videoUrl ? "Photos & Video" : "View Gallery"}</span>
                         </div>
                         
-                        <div className="absolute bottom-4 left-4 right-4 text-white">
-                          <h2 className="text-2xl font-black leading-tight drop-shadow-md">{college.name}</h2>
-                          <div className="flex items-center space-x-1 mt-1 text-sm font-semibold opacity-90">
-                            <MapPin className="w-4 h-4" />
+                        <div className="absolute bottom-2.5 left-3 right-3 text-white pointer-events-none z-10">
+                          <h2 className="text-base sm:text-xl font-black leading-tight drop-shadow-md">{college.name}</h2>
+                          <div className="flex items-center space-x-1 mt-0.5 text-xs font-semibold opacity-90">
+                            <MapPin className="w-3.5 h-3.5" />
                             <span>{college.place} • {college.probability}% Match</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Card Content Details */}
-                      <div className="p-6">
-                        <p className="text-sm font-semibold text-slate-700 leading-snug mb-5 line-clamp-2">
+                      {/* Card Content Details - Fits card height without scroll */}
+                      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between overflow-hidden">
+                        <p className="text-xs font-semibold text-slate-700 leading-snug my-0.5 line-clamp-2">
                           {college.details || `Top college offering ${bestCourse.courseName || "various courses"} for your rank.`}
                         </p>
 
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-2.5 mb-6">
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><DollarSign className="w-3 h-3 mr-0.5" /> Fees</span>
-                            <span className="font-black text-slate-800 text-sm">₹{((bestCourse.fees || college.fees || 0) / 100000).toFixed(1)}L / yr</span>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 my-1">
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><span className="text-xs font-black mr-0.5 text-slate-700">₹</span> Fees</span>
+                            <span className="font-black text-slate-800 text-xs sm:text-sm">₹{((bestCourse.fees || college.fees || 0) / 100000).toFixed(1)}L / yr</span>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Round</span>
-                            <span className="font-black text-rose-600 text-sm">{bestCourse.cutoffRound || `R${bestCourse.round || 1}`}</span>
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><Award className="w-3 h-3 mr-0.5" /> Round</span>
+                            <span className="font-black text-rose-600 text-xs sm:text-sm">{bestCourse.cutoffRound || `R${bestCourse.round || 1}`}</span>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-blue-500" /> CET Cutoff</span>
-                            <span className="font-black text-blue-900 text-sm">#{bestCourse.cutoffRank?.toLocaleString() || "N/A"}</span>
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><Award className="w-3 h-3 mr-0.5 text-blue-500" /> CET Cutoff</span>
+                            <span className="font-black text-blue-900 text-sm sm:text-base">#{bestCourse.cutoffRank?.toLocaleString() || "N/A"}</span>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-indigo-500" /> DCET Cutoff</span>
-                            <span className="font-black text-indigo-900 text-sm">{bestCourse.dcetCutoffRank ? `#${bestCourse.dcetCutoffRank.toLocaleString()}` : "N/A"}</span>
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><Award className="w-3 h-3 mr-0.5 text-indigo-500" /> DCET Cutoff</span>
+                            <span className="font-black text-indigo-900 text-sm sm:text-base">{bestCourse.dcetCutoffRank ? `#${bestCourse.dcetCutoffRank.toLocaleString()}` : "N/A"}</span>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-emerald-500" /> Avg Placement</span>
-                            <span className="font-black text-emerald-800 text-sm">{bestCourse.averagePackage || "N/A"} LPA</span>
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><Award className="w-3 h-3 mr-0.5 text-emerald-500" /> Avg Placement</span>
+                            <span className="font-black text-emerald-800 text-xs sm:text-sm">{bestCourse.averagePackage || "N/A"} LPA</span>
                           </div>
-                          <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1 flex items-center"><Award className="w-3 h-3 mr-0.5 text-purple-500" /> Max Placement</span>
-                            <span className="font-black text-purple-900 text-sm">{bestCourse.highestPackage || "N/A"} LPA</span>
+                          <div className="bg-slate-50 p-2 sm:p-2.5 rounded-xl border border-slate-100 flex flex-col">
+                            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-0.5 flex items-center"><Award className="w-3 h-3 mr-0.5 text-purple-500" /> Max Placement</span>
+                            <span className="font-black text-purple-900 text-xs sm:text-sm">{bestCourse.highestPackage || "N/A"} LPA</span>
                           </div>
                         </div>
 
-                        {/* Remove / View Details text button */}
-                        <div className="text-center">
+                        {/* View Specs & Info prominent button */}
+                        <div className="pt-1">
                           <button 
                             onClick={() => {
                               setSwipeDirection("up");
                               onSelectCollege(college);
                             }}
-                            className="text-slate-400 font-bold text-xs flex items-center justify-center space-x-1 w-full hover:text-rose-500 transition-colors"
+                            className="bg-rose-50 hover:bg-rose-100 text-rose-600 font-extrabold text-xs py-2 px-3 rounded-xl flex items-center justify-center space-x-1.5 w-full border border-rose-200 transition-all active:scale-98 cursor-pointer shadow-xs"
                           >
-                            <span>ℹ️ Info & Specs</span>
+                            <Info className="w-3.5 h-3.5 text-rose-500" />
+                            <span>View Full Info & Specs →</span>
                           </button>
                         </div>
                       </div>
                     </motion.div>
                   );
                 })() : (
-                  <div className="bg-white w-full rounded-[2.5rem] shadow-xl p-10 text-center border border-slate-100 z-10 relative">
-                    <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-10 w-10 text-rose-500" />
+                  <div className="bg-white w-full rounded-[2.5rem] shadow-xl p-8 sm:p-10 text-center border border-slate-100 z-10 relative">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      {processedColleges.length === 0 ? (
+                        <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-rose-500" />
+                      ) : (
+                        <Sparkles className="h-8 w-8 sm:h-10 sm:w-10 text-rose-500" />
+                      )}
                     </div>
-                    <h3 className="text-xl font-black text-slate-900 mb-2">No more matches!</h3>
-                    <p className="text-slate-500 text-sm mb-6">You have swiped through all available colleges for your criteria.</p>
-                    <button 
-                      onClick={() => {
-                        setSwipeDirection(null);
-                        setSwipeIndex(0);
-                      }}
-                      className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold active:scale-95 transition-all shadow-lg shadow-rose-500/20"
-                    >
-                      Start Over
-                    </button>
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-2">
+                      {processedColleges.length === 0 ? "No Matching Colleges Found" : "All matches reviewed!"}
+                    </h3>
+                    <p className="text-slate-500 text-xs sm:text-sm mb-6 max-w-sm mx-auto leading-relaxed">
+                      {processedColleges.length === 0 ? (
+                        selectedCourses.length > 0 ? (
+                          <>None of the colleges offer your selected branch(es): <span className="font-bold text-rose-600">{selectedCourses.join(", ")}</span> for your current filter limits.</>
+                        ) : (
+                          <>No colleges match your rank, fee limit, or cutoff filter criteria.</>
+                        )
+                      ) : (
+                        "You have swiped through all available colleges matching your criteria."
+                      )}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      {processedColleges.length === 0 && selectedCourses.length > 0 ? (
+                        <button 
+                          onClick={() => setStep(2)}
+                          className="w-full py-3.5 bg-rose-500 text-white rounded-2xl font-bold active:scale-95 transition-all shadow-lg shadow-rose-500/20 text-xs cursor-pointer"
+                        >
+                          Modify Selected Branches
+                        </button>
+                      ) : null}
+                      <button 
+                        onClick={() => {
+                          setSwipeDirection(null);
+                          setSwipeIndex(0);
+                          setMinFees(0);
+                          setMaxFees(300000);
+                          setMinCutoff(0);
+                          setMaxCutoff(150000);
+                        }}
+                        className={`w-full py-3.5 text-xs font-bold active:scale-95 transition-all rounded-2xl cursor-pointer ${
+                          processedColleges.length === 0 && selectedCourses.length > 0
+                            ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            : "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                        }`}
+                      >
+                        Reset Fee & Cutoff Filters
+                      </button>
+                    </div>
                   </div>
                 )}
                 </AnimatePresence>
 
                 {/* Bottom Swipe Actions */}
-                {swipeIndex < processedColleges.length && (
-                  <div className="flex justify-between items-center mt-6 px-4 z-20 relative">
+                {swipeIndex < processedColleges.length && !isVideoFullscreen && (
+                  <div className="flex justify-between items-center mt-3 px-2 z-20 relative">
                     <button 
                       onClick={handleSwipeLeft}
-                      className="w-16 h-16 bg-white/20 hover:bg-white/40 backdrop-blur-xl shadow-xl shadow-slate-900/5 rounded-full flex items-center justify-center border border-white/60 text-slate-800 hover:text-rose-600 active:scale-90 transition-all cursor-pointer group"
+                      className="w-14 h-14 sm:w-16 sm:h-16 bg-white/30 hover:bg-white/50 backdrop-blur-xl shadow-xl shadow-slate-900/10 rounded-full flex items-center justify-center border border-white/60 text-slate-900 hover:text-rose-600 active:scale-90 transition-all cursor-pointer group"
                       title="Pass / Swipe Left"
                     >
-                      <span className="text-2xl font-black group-hover:scale-110 transition-transform">✕</span>
+                      <span className="text-xl sm:text-2xl font-black group-hover:scale-110 transition-transform">✕</span>
                     </button>
-                    <div className="bg-white/20 backdrop-blur-xl border border-white/50 px-5 py-2 rounded-full text-[10px] font-black text-slate-800 uppercase tracking-widest text-center shadow-xs">
+                    <div className="bg-white/30 backdrop-blur-xl border border-white/60 px-4 py-1.5 rounded-full text-[10px] font-black text-slate-900 uppercase tracking-widest text-center shadow-xs">
                       Swipe Cards
                     </div>
                     <button 
                       onClick={() => handleSwipeRight(processedColleges[swipeIndex].id)}
-                      className="w-16 h-16 bg-white/20 hover:bg-white/40 backdrop-blur-xl shadow-xl shadow-rose-500/10 rounded-full flex items-center justify-center border border-white/60 text-rose-500 active:scale-90 transition-all cursor-pointer group"
+                      className="w-14 h-14 sm:w-16 sm:h-16 bg-white/30 hover:bg-white/50 backdrop-blur-xl shadow-xl shadow-rose-500/20 rounded-full flex items-center justify-center border border-white/60 text-rose-500 active:scale-90 transition-all cursor-pointer group"
                       title="Like / Add Favorite"
                     >
-                      <Heart className={`h-7 w-7 group-hover:scale-110 transition-transform ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500 text-rose-500' : 'text-rose-500'}`} />
+                      <Heart className={`h-6 w-6 sm:h-7 sm:w-7 group-hover:scale-110 transition-transform ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500 text-rose-500' : 'text-rose-500'}`} />
                     </button>
                   </div>
                 )}
               </div>
+
+              {/* Range Filters Panel (Placed Below College Card & Swipe Buttons) */}
+              {!isVideoFullscreen && (
+                <div className="mt-3 px-2 sm:px-3 py-1 space-y-3">
+                  {/* Fees Drag Line Slider */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="text-[11px] sm:text-xs uppercase tracking-wider font-extrabold text-slate-700">Fees Limit</span>
+                      <span className="font-mono text-rose-600 font-black text-xs sm:text-sm bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md shadow-2xs">
+                        Up to {formatFeeLimitDisplay(maxFees)} / yr
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="20000"
+                      max="300000"
+                      step="5000"
+                      value={maxFees}
+                      onChange={(e) => {
+                        setMinFees(0);
+                        setMaxFees(Number(e.target.value));
+                      }}
+                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-rose-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
+                    />
+                  </div>
+
+                  {/* Cutoff Rank Drag Line Slider */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
+                      <span className="text-xs sm:text-sm uppercase tracking-wider font-black text-slate-900">{rankType} CUTOFF RANK</span>
+                      <span className="font-mono text-rose-600 font-black text-sm sm:text-base bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md shadow-2xs">
+                        Up to #{maxCutoff.toLocaleString()}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1000"
+                      max="150000"
+                      step="1000"
+                      value={maxCutoff}
+                      onChange={(e) => {
+                        setMinCutoff(0);
+                        setMaxCutoff(Number(e.target.value));
+                      }}
+                      className="w-full appearance-none h-2 bg-slate-200 rounded-lg outline-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-rose-500 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -1447,73 +1494,143 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
         </div>
       )}
 
-      {/* IMAGE SLIDESHOW MODAL */}
+      {/* IMAGE & VIDEO SLIDESHOW MODAL */}
       <AnimatePresence>
-        {showSlideshow && currentCollege && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
-          >
-            <div className="p-6 flex items-center justify-between text-white">
-              <div className="flex flex-col">
-                <h3 className="font-display font-black text-xl tracking-tight">{currentCollege.name}</h3>
-                <span className="text-xs text-white/60 font-bold uppercase tracking-widest">{activeImageIndex + 1} of {currentCollegeImages.length} Campus Photos</span>
+        {showSlideshow && currentCollege && (() => {
+          const totalSlides = currentCollegeImages.length + (currentCollege.videoUrl ? 1 : 0);
+          const isVideoSlide = currentCollege.videoUrl && activeImageIndex === currentCollegeImages.length;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
+            >
+              <div className="p-4 sm:p-6 flex items-center justify-between text-white border-b border-white/10">
+                <div className="flex flex-col">
+                  <h3 className="font-display font-black text-lg sm:text-xl tracking-tight">{currentCollege.name}</h3>
+                  <span className="text-xs text-white/60 font-bold uppercase tracking-widest">
+                    {isVideoSlide 
+                      ? "Campus Video Tour" 
+                      : `${activeImageIndex + 1} of ${currentCollegeImages.length} Campus Photos`}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {!isVideoSlide && (
+                    <>
+                      <button
+                        onClick={() => setSlideshowZoomScale(prev => Math.min(3.5, prev + 0.5))}
+                        className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all cursor-pointer"
+                        title="Zoom In"
+                      >
+                        <ZoomIn className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => setSlideshowZoomScale(prev => Math.max(1, prev - 0.5))}
+                        className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all cursor-pointer"
+                        title="Zoom Out"
+                      >
+                        <ZoomOut className="h-5 w-5" />
+                      </button>
+                      {slideshowZoomScale > 1 && (
+                        <button
+                          onClick={() => setSlideshowZoomScale(1)}
+                          className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all cursor-pointer"
+                          title="Reset Zoom"
+                        >
+                          <RotateCcw className="h-5 w-5" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                  <button 
+                    onClick={() => {
+                      setSlideshowZoomScale(1);
+                      setShowSlideshow(false);
+                    }}
+                    className="p-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer text-white ml-2"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
               </div>
-              <button 
-                onClick={() => setShowSlideshow(false)}
-                className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all cursor-pointer"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
 
-            <div className="flex-1 relative flex items-center justify-center p-4">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveImageIndex(prev => (prev === 0 ? currentCollegeImages.length - 1 : prev - 1));
-                }}
-                className="absolute left-6 z-10 p-4 bg-black/40 border border-white/10 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all active:scale-90"
-              >
-                <ChevronLeft className="h-8 w-8" />
-              </button>
+              <div className="flex-1 relative flex items-center justify-center p-4 overflow-auto">
+                {totalSlides > 1 && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlideshowZoomScale(1);
+                      setActiveImageIndex(prev => (prev === 0 ? totalSlides - 1 : prev - 1));
+                    }}
+                    className="absolute left-4 sm:left-6 z-10 p-3 sm:p-4 bg-black/50 border border-white/20 backdrop-blur-md rounded-full text-white hover:bg-black/70 transition-all active:scale-90 cursor-pointer"
+                  >
+                    <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
+                  </button>
+                )}
 
-              <motion.img
-                key={activeImageIndex}
-                initial={{ opacity: 0, scale: 0.9, x: 20 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 1.1, x: -20 }}
-                src={currentCollegeImages[activeImageIndex]}
-                className="max-w-full max-h-[70vh] object-contain rounded-3xl shadow-2xl"
-                alt="Campus view"
-              />
+                <div 
+                  className="relative max-w-full max-h-[70vh] w-full flex items-center justify-center overflow-hidden touch-none"
+                  onTouchStart={handleTouchStartPinch}
+                  onTouchMove={handleTouchMovePinch}
+                  onTouchEnd={handleTouchEndPinch}
+                >
+                  {isVideoSlide ? (
+                    <div className="w-full max-w-2xl aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10">
+                      <AutoPlayVideo 
+                        url={currentCollege.videoUrl!} 
+                        title={currentCollege.name} 
+                      />
+                    </div>
+                  ) : (
+                    <motion.img
+                      key={activeImageIndex}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: slideshowZoomScale }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      src={currentCollegeImages[activeImageIndex]}
+                      style={{ transform: `scale(${slideshowZoomScale})` }}
+                      className="max-w-full max-h-[70vh] object-contain rounded-2xl sm:rounded-3xl shadow-2xl transition-transform duration-200 cursor-zoom-in"
+                      alt="Campus view"
+                      onClick={() => setSlideshowZoomScale(prev => (prev > 1 ? 1 : 2))}
+                    />
+                  )}
+                </div>
 
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveImageIndex(prev => (prev === currentCollegeImages.length - 1 ? 0 : prev + 1));
-                }}
-                className="absolute right-6 z-10 p-4 bg-black/40 border border-white/10 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all active:scale-90"
-              >
-                <ChevronRight className="h-8 w-8" />
-              </button>
-            </div>
+                {totalSlides > 1 && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlideshowZoomScale(1);
+                      setActiveImageIndex(prev => (prev === totalSlides - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-4 sm:right-6 z-10 p-3 sm:p-4 bg-black/50 border border-white/20 backdrop-blur-md rounded-full text-white hover:bg-black/70 transition-all active:scale-90 cursor-pointer"
+                  >
+                    <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
+                  </button>
+                )}
+              </div>
 
-            <div className="p-8 flex items-center justify-center space-x-2">
-              {currentCollegeImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === activeImageIndex ? "w-8 bg-rose-500" : "w-2 bg-white/20"
-                  }`}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
+              <div className="p-6 flex items-center justify-center space-x-2">
+                {Array.from({ length: totalSlides }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSlideshowZoomScale(1);
+                      setActiveImageIndex(idx);
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      idx === activeImageIndex ? "w-8 bg-rose-500" : "w-2 bg-white/20"
+                    }`}
+                    title={idx === currentCollegeImages.length ? "Campus Video" : `Photo ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

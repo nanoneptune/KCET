@@ -1,17 +1,15 @@
-import React, { useState } from "react";
-import { ExternalLink, Youtube, AlertCircle } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Volume2, VolumeX, RotateCw, RotateCcw, Maximize2, Minimize2, AlertCircle, X } from "lucide-react";
 
 export function extractYouTubeId(url: string | undefined | null): string | null {
   if (!url || typeof url !== "string") return null;
   const trimmed = url.trim();
   if (!trimmed) return null;
 
-  // 1. Raw 11-character video ID
   if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
     return trimmed;
   }
 
-  // 2. Extract src if iframe code was pasted
   if (trimmed.includes("<iframe")) {
     const srcMatch = trimmed.match(/src=["']([^"']+)["']/);
     if (srcMatch && srcMatch[1]) {
@@ -19,42 +17,40 @@ export function extractYouTubeId(url: string | undefined | null): string | null 
     }
   }
 
-  // 3. YouTube URL regex matching standard, shorts, live, embed, youtu.be, etc.
   const ytRegex = /(?:https?:\/\/)?(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = trimmed.match(ytRegex);
   if (match && match[1]) {
     return match[1];
   }
 
-  // 4. Query param v=
   const vParamMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (vParamMatch && vParamMatch[1]) return vParamMatch[1];
 
-  // 5. Any /shorts/ID or /embed/ID or /v/ID or /live/ID or /youtu.be/ID
   const pathMatch = trimmed.match(/\/(shorts|embed|v|live|watch|youtu\.be)\/([a-zA-Z0-9_-]{11})/);
   if (pathMatch && pathMatch[2]) return pathMatch[2];
 
   return null;
 }
 
-export function parseVideoUrl(url: string | undefined) {
-  if (!url || typeof url !== "string") return { isVideo: false };
+export function parseVideoUrl(url: string | undefined, isMuted: boolean = true) {
+  if (!url || typeof url !== "string") return { isVideo: false, isVertical: false };
   const trimmed = url.trim();
-  if (!trimmed) return { isVideo: false };
+  if (!trimmed) return { isVideo: false, isVertical: false };
 
-  // Try YouTube extraction first
+  const isVertical = trimmed.includes("/shorts/") || trimmed.includes("vertical") || trimmed.includes("9:16") || trimmed.includes("9/16");
+
   const ytId = extractYouTubeId(trimmed);
   if (ytId) {
     return {
       isVideo: true,
       isYouTube: true,
       videoId: ytId,
-      embedUrl: `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&playlist=${ytId}&playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1`,
+      isVertical,
+      embedUrl: `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=${ytId}&playsinline=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&fs=0&enablejsapi=1`,
       watchUrl: `https://www.youtube.com/watch?v=${ytId}`
     };
   }
 
-  // Try Vimeo
   if (trimmed.includes("vimeo.com")) {
     const vimeoMatch = trimmed.match(/vimeo\.com\/(?:video\/)?(\d+)/);
     if (vimeoMatch && vimeoMatch[1]) {
@@ -62,135 +58,340 @@ export function parseVideoUrl(url: string | undefined) {
         isVideo: true,
         isYouTube: false,
         isVimeo: true,
-        embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&muted=1&loop=1&autopause=0&background=1`,
+        isVertical,
+        embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&muted=${isMuted ? 1 : 0}&loop=1&autopause=0&background=1`,
         watchUrl: `https://vimeo.com/${vimeoMatch[1]}`
       };
     }
   }
 
-  // Direct video file or Cloudinary video link
   if (trimmed.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i) || (trimmed.includes("cloudinary.com") && trimmed.includes("/video/upload/"))) {
     return {
       isVideo: true,
       isYouTube: false,
       isDirectVideo: true,
+      isVertical,
       embedUrl: trimmed
     };
   }
 
-  // Generic URL fallback
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    if (trimmed.toLowerCase().includes("youtube") || trimmed.toLowerCase().includes("youtu.be")) {
-      return {
-        isVideo: true,
-        isYouTube: true,
-        embedUrl: trimmed,
-        watchUrl: trimmed
-      };
-    }
-
     return {
       isVideo: true,
-      isYouTube: false,
-      isOtherEmbed: true,
-      embedUrl: trimmed
+      isYouTube: trimmed.toLowerCase().includes("youtube") || trimmed.toLowerCase().includes("youtu.be"),
+      isVertical,
+      embedUrl: trimmed,
+      watchUrl: trimmed
     };
   }
 
-  return { isVideo: false };
+  return { isVideo: false, isVertical: false };
 }
 
 interface AutoPlayVideoProps {
   url: string;
   className?: string;
   title?: string;
-  showYouTubeLink?: boolean;
   interactive?: boolean;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
 }
 
 export const AutoPlayVideo: React.FC<AutoPlayVideoProps> = ({
   url,
   className = "w-full h-full object-cover",
   title = "Campus Video",
-  showYouTubeLink = true,
-  interactive = false
+  interactive = true,
+  onFullscreenChange
 }) => {
   const [hasError, setHasError] = useState(false);
-  const parsed = parseVideoUrl(url);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [forceRotateHorizontal, setForceRotateHorizontal] = useState(false);
+  const [doubleTapFeedback, setDoubleTapFeedback] = useState<{ side: "left" | "right"; text: string } | null>(null);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const fullscreenIframeRef = useRef<HTMLIFrameElement>(null);
+
+  const lastTapLeft = useRef<number>(0);
+  const lastTapRight = useRef<number>(0);
+
+  const parsed = parseVideoUrl(url, isMuted);
 
   if (!parsed.isVideo || !parsed.embedUrl) return null;
 
-  const { isYouTube, isVimeo, isDirectVideo, embedUrl, watchUrl } = parsed;
+  const { isYouTube, isVimeo, isDirectVideo, embedUrl, isVertical } = parsed;
 
-  if (isYouTube || isVimeo || embedUrl.includes("youtube") || embedUrl.includes("vimeo") || embedUrl.includes("embed")) {
-    return (
-      <div className="relative w-full h-full group overflow-hidden bg-slate-950">
-        {hasError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-slate-900 text-white text-center space-y-2">
-            <AlertCircle className="w-8 h-8 text-rose-500" />
-            <p className="text-xs font-bold text-slate-300">Video cannot be embedded directly</p>
-            {watchUrl && (
-              <a
-                href={watchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all shadow-md cursor-pointer"
-              >
-                <Youtube className="w-3.5 h-3.5" />
-                <span>Watch on YouTube</span>
-                <ExternalLink className="w-3 h-3 ml-0.5" />
-              </a>
-            )}
+  const sendYtCommand = (func: string, args: any[] = [], targetRef = iframeRef) => {
+    const activeRef = isFullscreen ? fullscreenIframeRef : targetRef;
+    if (activeRef.current && activeRef.current.contentWindow) {
+      try {
+        activeRef.current.contentWindow.postMessage(
+          JSON.stringify({ event: "command", func, args }),
+          "*"
+        );
+      } catch (e) {
+        console.warn("YouTube player command error:", e);
+      }
+    }
+  };
+
+  const toggleMute = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    sendYtCommand(nextMuted ? "mute" : "unMute");
+  };
+
+  const skipForward = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    sendYtCommand("seekTo", [30, true]);
+  };
+
+  const skipBackward = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    sendYtCommand("seekTo", [-30, true]);
+  };
+
+  const triggerDoubleTapFeedback = (side: "left" | "right", text: string) => {
+    setDoubleTapFeedback({ side, text });
+    setTimeout(() => {
+      setDoubleTapFeedback(null);
+    }, 700);
+  };
+
+  const handleLeftClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastTapLeft.current < 300) {
+      // Double tap!
+      skipBackward();
+      triggerDoubleTapFeedback("left", "-30s");
+      lastTapLeft.current = 0;
+    } else {
+      lastTapLeft.current = now;
+    }
+  };
+
+  const handleRightClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastTapRight.current < 300) {
+      // Double tap!
+      skipForward();
+      triggerDoubleTapFeedback("right", "+30s");
+      lastTapRight.current = 0;
+    } else {
+      lastTapRight.current = now;
+    }
+  };
+
+  const openFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFullscreen(true);
+    onFullscreenChange?.(true);
+    if (!isVertical) {
+      setForceRotateHorizontal(true);
+    }
+  };
+
+  const closeFullscreen = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setIsFullscreen(false);
+    onFullscreenChange?.(false);
+  };
+
+  const renderVideoElement = (refObj: React.RefObject<HTMLIFrameElement | null>, customClass = "") => {
+    if (isYouTube || isVimeo || embedUrl.includes("youtube") || embedUrl.includes("vimeo") || embedUrl.includes("embed")) {
+      return (
+        <iframe
+          ref={refObj}
+          src={embedUrl}
+          title={title}
+          onError={() => setHasError(true)}
+          className={`w-full h-full border-0 pointer-events-none ${customClass || className}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      );
+    }
+
+    if (isDirectVideo) {
+      return (
+        <video
+          src={embedUrl}
+          autoPlay
+          muted={isMuted}
+          loop
+          playsInline
+          className={`w-full h-full ${customClass || className}`}
+          onError={() => setHasError(true)}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="relative w-full h-full group overflow-hidden bg-slate-950 flex flex-col justify-between">
+      {hasError ? (
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-slate-900 text-white text-center space-y-2">
+          <AlertCircle className="w-8 h-8 text-rose-500" />
+          <p className="text-xs font-bold text-slate-300">Campus Video Preview</p>
+        </div>
+      ) : (
+        <>
+          <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center min-h-0">
+            {renderVideoElement(iframeRef, "scale-105")}
           </div>
-        ) : (
-          <>
-            <iframe
-              src={embedUrl}
-              title={title}
-              onError={() => setHasError(true)}
-              className={`w-full h-full border-0 ${interactive ? "" : "pointer-events-none scale-105"} ${className}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
 
-            {/* Direct Watch on YouTube button overlay */}
-            {showYouTubeLink && watchUrl && (
-              <a
-                href={watchUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="absolute top-3 right-3 z-20 px-2.5 py-1 bg-black/80 hover:bg-rose-600 text-white text-[10px] font-black rounded-full backdrop-blur-md border border-white/20 transition-all flex items-center space-x-1 shadow-lg opacity-80 hover:opacity-100 hover:scale-105 cursor-pointer"
-                title="Open directly on YouTube"
+          {/* Minimalist Control Buttons Below Video Frame (No Background, No Border, Low Opacity Icons) */}
+          {interactive && (
+            <div 
+              className="w-full bg-slate-950/95 py-1 px-3 flex items-center justify-between text-white z-30 shrink-0 pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={skipBackward}
+                  className="opacity-60 hover:opacity-100 transition-opacity cursor-pointer flex items-center space-x-1 text-[10px] font-medium text-white/90 active:scale-95"
+                  title="Rewind 30s"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>-30s</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  className="opacity-60 hover:opacity-100 transition-opacity cursor-pointer flex items-center space-x-1 text-[10px] font-medium text-white/90 active:scale-95"
+                  title={isMuted ? "Enable Audio" : "Disable Audio"}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                  ) : (
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                  )}
+                  <span>{isMuted ? "Muted" : "Sound On"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={skipForward}
+                  className="opacity-60 hover:opacity-100 transition-opacity cursor-pointer flex items-center space-x-1 text-[10px] font-medium text-white/90 active:scale-95"
+                  title="Skip 30s"
+                >
+                  <span>+30s</span>
+                  <RotateCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={openFullscreen}
+                className="opacity-60 hover:opacity-100 transition-opacity cursor-pointer p-0.5 text-white/90 active:scale-95 flex items-center justify-center"
+                title="Full Screen"
               >
-                <Youtube className="w-3 h-3 text-rose-400 group-hover:text-white" />
-                <span>Watch on YouTube</span>
-                <ExternalLink className="w-2.5 h-2.5 opacity-70" />
-              </a>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </>
+      )}
 
-  if (isDirectVideo) {
-    return (
-      <video
-        src={embedUrl}
-        autoPlay
-        muted
-        loop
-        playsInline
-        controls={interactive}
-        className={className}
-        onError={() => setHasError(true)}
-      />
-    );
-  }
+      {/* Fullscreen Video Overlay Viewport */}
+      {isFullscreen && (
+        <div 
+          className="fixed inset-0 z-[300] bg-black flex items-center justify-center overflow-hidden animate-in fade-in duration-200"
+          onClick={closeFullscreen}
+        >
+          {/* Full Screen Player Container */}
+          <div 
+            className={`relative w-full h-full flex items-center justify-center ${
+              !isVertical && forceRotateHorizontal 
+                ? "sm:rotate-0 rotate-90 w-[100vh] h-[100vw] max-w-none max-h-none transition-transform duration-300" 
+                : "w-full h-full"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Video Frame */}
+            <div className={`w-full h-full relative overflow-hidden flex items-center justify-center ${isVertical ? "max-w-md aspect-[9/16]" : "w-full h-full"}`}>
+              {renderVideoElement(fullscreenIframeRef, "w-full h-full object-contain")}
 
-  return null;
+              {/* Invisible Double-Tap Zones for Skip 30s */}
+              <div 
+                className="absolute inset-y-0 left-0 w-1/2 z-20 cursor-pointer flex items-center justify-center"
+                onClick={handleLeftClick}
+              >
+                {doubleTapFeedback?.side === "left" && (
+                  <div className="bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center space-x-2 text-sm font-black animate-ping">
+                    <RotateCcw className="w-5 h-5 text-rose-400" />
+                    <span>{doubleTapFeedback.text}</span>
+                  </div>
+                )}
+              </div>
+
+              <div 
+                className="absolute inset-y-0 right-0 w-1/2 z-20 cursor-pointer flex items-center justify-center"
+                onClick={handleRightClick}
+              >
+                {doubleTapFeedback?.side === "right" && (
+                  <div className="bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-full flex items-center space-x-2 text-sm font-black animate-ping">
+                    <span>{doubleTapFeedback.text}</span>
+                    <RotateCw className="w-5 h-5 text-rose-400" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Floating Minimalist Controls (Borderless, Low Opacity Icons Only) */}
+            <div 
+              className="absolute bottom-4 left-4 right-4 z-40 flex items-center justify-between pointer-events-auto opacity-50 hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Sound Off / On Button */}
+              <button
+                type="button"
+                onClick={toggleMute}
+                className="p-3 text-white hover:scale-110 active:scale-90 transition-all cursor-pointer drop-shadow-2xl"
+                title={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? (
+                  <VolumeX className="w-6 h-6 text-rose-400" />
+                ) : (
+                  <Volume2 className="w-6 h-6 text-emerald-400" />
+                )}
+              </button>
+
+              {/* Rotate Option for Horizontal on Mobile */}
+              {!isVertical && (
+                <button
+                  type="button"
+                  onClick={() => setForceRotateHorizontal(!forceRotateHorizontal)}
+                  className="p-2.5 text-white/70 hover:text-white transition-all cursor-pointer"
+                  title="Toggle Auto Rotation"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Minimize / Back to Stage Button */}
+              <button
+                type="button"
+                onClick={closeFullscreen}
+                className="p-3 text-white hover:scale-110 active:scale-90 transition-all cursor-pointer drop-shadow-2xl"
+                title="Minimize / Exit Fullscreen"
+              >
+                <Minimize2 className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default AutoPlayVideo;
+
