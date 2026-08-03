@@ -48,12 +48,16 @@ export default function AdminPortal({
       });
 
       const contentType = res.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
+      let data: any = {};
+      
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
         const rawText = await res.text();
-        throw new Error(`Server endpoint returned non-JSON data (${res.status}): ${rawText.slice(0, 120)}`);
+        console.warn("AI Generation endpoint non-JSON response:", res.status, rawText);
+        throw new Error(`AI Service temporarily unreachable (${res.status}). Please verify API endpoint connectivity.`);
       }
 
-      const data = await res.json();
       if (!res.ok || data.error) {
         throw new Error(data.error || "Failed to generate AI college details.");
       }

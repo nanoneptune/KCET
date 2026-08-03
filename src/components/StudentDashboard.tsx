@@ -998,20 +998,20 @@ export function StudentDashboard({
                   <div className="flex justify-between items-center mt-6 px-4 z-20 relative">
                     <button 
                       onClick={handleSwipeLeft}
-                      className="w-16 h-16 bg-white/30 backdrop-blur-md shadow-2xl rounded-full flex items-center justify-center border border-white/60 text-slate-700 hover:text-rose-600 hover:bg-white/50 active:scale-90 transition-all cursor-pointer"
+                      className="w-16 h-16 bg-white/20 hover:bg-white/40 backdrop-blur-xl shadow-xl shadow-slate-900/5 rounded-full flex items-center justify-center border border-white/60 text-slate-800 hover:text-rose-600 active:scale-90 transition-all cursor-pointer group"
                       title="Pass / Swipe Left"
                     >
-                      <span className="text-2xl font-bold">✕</span>
+                      <span className="text-2xl font-black group-hover:scale-110 transition-transform">✕</span>
                     </button>
-                    <div className="bg-white/20 backdrop-blur-md border border-white/40 px-4 py-1.5 rounded-full text-[10px] font-black text-slate-700 uppercase tracking-widest text-center shadow-xs">
+                    <div className="bg-white/20 backdrop-blur-xl border border-white/50 px-5 py-2 rounded-full text-[10px] font-black text-slate-800 uppercase tracking-widest text-center shadow-xs">
                       Swipe Cards
                     </div>
                     <button 
                       onClick={() => handleSwipeRight(processedColleges[swipeIndex].id)}
-                      className="w-16 h-16 bg-white/30 backdrop-blur-md shadow-2xl rounded-full flex items-center justify-center border border-white/60 text-rose-500 hover:bg-white/50 active:scale-90 transition-all cursor-pointer"
+                      className="w-16 h-16 bg-white/20 hover:bg-white/40 backdrop-blur-xl shadow-xl shadow-rose-500/10 rounded-full flex items-center justify-center border border-white/60 text-rose-500 active:scale-90 transition-all cursor-pointer group"
                       title="Like / Add Favorite"
                     >
-                      <Heart className={`h-7 w-7 ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500 text-rose-500' : 'text-rose-500'}`} />
+                      <Heart className={`h-7 w-7 group-hover:scale-110 transition-transform ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500 text-rose-500' : 'text-rose-500'}`} />
                     </button>
                   </div>
                 )}

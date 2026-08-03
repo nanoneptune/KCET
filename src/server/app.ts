@@ -444,4 +444,9 @@ Situated in ${city || 'a well-connected area'}, offering convenient access to pu
   }
 });
 
+// Fallback for unmatched API routes - guarantees pure JSON responses
+app.all("/api/*", (req, res) => {
+  res.status(404).json({ error: `API route not found: ${req.method} ${req.path}` });
+});
+
 export default app;
