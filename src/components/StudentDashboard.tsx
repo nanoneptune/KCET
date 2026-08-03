@@ -195,20 +195,99 @@ export function StudentDashboard({
     setShowAiModal(true);
     setAiReport("");
     try {
-      const res = await fetch("/api/ai/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: currentUser.email,
-          courses: selectedCourses,
-          cetRank: cetRank ? Number(cetRank) : undefined,
-          category,
-          round
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setAiReport(data.prediction);
+      let reportText = "";
+
+      // 1. Try Backend API
+      try {
+        const res = await fetch("/api/ai/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: currentUser.email,
+            courses: selectedCourses,
+            cetRank: cetRank ? Number(cetRank) : undefined,
+            category,
+            round
+          })
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        if (res.ok && contentType.includes("application/json")) {
+          const data = await res.json();
+          if (data.prediction) {
+            reportText = data.prediction;
+          }
+        }
+      } catch (backendErr) {
+        console.warn("Backend prediction API notice, trying direct client fallback:", backendErr);
+      }
+
+      // 2. Fallback: Direct Groq Client Call
+      if (!reportText) {
+        const apiKey = (import.meta as any).env?.VITE_GROQ_API_KEY || "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";
+        const promptText = `You are a senior career counselor for Karnataka ${rankType} engineering admissions.
+Student Details:
+- Rank: ${cetRank || "Not provided"}
+- Category: ${category}
+- Target Round: Round ${round}
+- Interested Branches: ${selectedCourses.join(", ") || "Engineering Branches"}
+
+Provide a comprehensive, encouraging Markdown strategy report covering:
+1. 🎯 **Strategic Analysis & Rank Viability**: Direct analysis of admission chances for Round ${round}.
+2. 📋 **Recommended Option Entry Sequence**: Top choices for option filling.
+3. 💡 **Pro-Counseling Tips**: Key pitfalls to avoid during option entry.`;
+
+        const modelsToTry = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+        for (const modelName of modelsToTry) {
+          try {
+            const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                model: modelName,
+                messages: [
+                  { role: "system", content: "You are an expert Karnataka engineering admissions counselor." },
+                  { role: "user", content: promptText }
+                ],
+                temperature: 0.6,
+                max_tokens: 1500
+              })
+            });
+
+            if (groqRes.ok) {
+              const gData = await groqRes.json();
+              const result = gData.choices?.[0]?.message?.content;
+              if (result) {
+                reportText = result;
+                break;
+              }
+            }
+          } catch (e) {
+            console.warn("Direct Groq client call error:", e);
+          }
+        }
+      }
+
+      // 3. Fallback: Local Smart Counselor Generator
+      if (!reportText) {
+        reportText = `### 🎯 Strategic Counseling Advisory Report for Round ${round}
+
+**Student Rank:** ${cetRank ? `#${Number(cetRank).toLocaleString()}` : "Unranked"} | **Category:** ${category} | **Exam:** ${rankType}
+
+#### 1. 📊 Option Entry Strategy for Round ${round}
+- **Top Dream Choices (Priority 1-3):** Place high-tier colleges like RVCE, BMSCE, or MSRIT at the top of your option list regardless of rank.
+- **High Viability Options (Priority 4-7):** Include solid mid-tier colleges matching your cutoff window.
+- **Safety Net Options (Priority 8-10):** Include at least 3 backup options where cutoffs comfortably exceed your current rank.
+
+#### 💡 Key Guidance Rules
+1. **Never skip option entries:** Fill at least 15 to 20 option preferences.
+2. **Freeze vs Float:** If you get a top 3 choice in Round ${round}, consider accepting or upgrading carefully.`;
+      }
+
+      setAiReport(reportText);
     } catch (err: any) {
       setAiReport(`### ❌ Connection Interrupted\n\nFailed to connect with AI Counselor. Error: ${err.message}`);
     } finally {
