@@ -47,6 +47,12 @@ export default function AdminPortal({
         body: JSON.stringify({ name: name.trim(), place: place.trim() }),
       });
 
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const rawText = await res.text();
+        throw new Error(`Server endpoint returned non-JSON data (${res.status}): ${rawText.slice(0, 120)}`);
+      }
+
       const data = await res.json();
       if (!res.ok || data.error) {
         throw new Error(data.error || "Failed to generate AI college details.");
@@ -55,7 +61,8 @@ export default function AdminPortal({
       if (data.details) {
         setDetails(data.details);
         setShowMdPreview(true);
-        setSuccessMsg("✨ AI generated rich campus overview & student highlights! (Excluded fees/ranks as instructed)");
+        const providerTag = data.provider ? ` (${data.provider})` : "";
+        setSuccessMsg(`✨ AI generated rich campus overview & student highlights${providerTag}! (Excluded fees/ranks as instructed)`);
       }
     } catch (err: any) {
       console.error("AI Details Generation Error:", err);

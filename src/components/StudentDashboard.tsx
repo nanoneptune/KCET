@@ -998,18 +998,20 @@ export function StudentDashboard({
                   <div className="flex justify-between items-center mt-6 px-4 z-20 relative">
                     <button 
                       onClick={handleSwipeLeft}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-slate-400 hover:text-rose-500 active:scale-90 transition-all cursor-pointer"
+                      className="w-16 h-16 bg-white/30 backdrop-blur-md shadow-2xl rounded-full flex items-center justify-center border border-white/60 text-slate-700 hover:text-rose-600 hover:bg-white/50 active:scale-90 transition-all cursor-pointer"
+                      title="Pass / Swipe Left"
                     >
-                      <span className="text-2xl font-light">✕</span>
+                      <span className="text-2xl font-bold">✕</span>
                     </button>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
-                      Keep Swiping
+                    <div className="bg-white/20 backdrop-blur-md border border-white/40 px-4 py-1.5 rounded-full text-[10px] font-black text-slate-700 uppercase tracking-widest text-center shadow-xs">
+                      Swipe Cards
                     </div>
                     <button 
                       onClick={() => handleSwipeRight(processedColleges[swipeIndex].id)}
-                      className="w-16 h-16 bg-white shadow-xl rounded-full flex items-center justify-center border border-slate-100 text-rose-500 active:scale-90 transition-all cursor-pointer"
+                      className="w-16 h-16 bg-white/30 backdrop-blur-md shadow-2xl rounded-full flex items-center justify-center border border-white/60 text-rose-500 hover:bg-white/50 active:scale-90 transition-all cursor-pointer"
+                      title="Like / Add Favorite"
                     >
-                      <Heart className={`h-7 w-7 ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500' : ''}`} />
+                      <Heart className={`h-7 w-7 ${((currentUser.favorites || []).includes(processedColleges[swipeIndex].id)) ? 'fill-rose-500 text-rose-500' : 'text-rose-500'}`} />
                     </button>
                   </div>
                 )}
@@ -1053,29 +1055,82 @@ export function StudentDashboard({
 
               <div className="space-y-4">
                 {strategicOptions.length > 0 ? (
-                  strategicOptions.slice(0, 10).map((college, idx) => (
-                    <div key={college.id} className="flex items-center space-x-4 group">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-100 flex items-center justify-center text-xs font-black text-slate-600 group-hover:border-rose-400 group-hover:text-rose-400 transition-all shrink-0">
-                        {idx + 1}
-                      </div>
-                      <div 
-                        onClick={() => onSelectCollege(college)}
-                        className="flex-1 bg-white/60 border border-white/80 rounded-2xl p-4 hover:border-rose-500/50 transition-all cursor-pointer active:scale-[0.98] shadow-sm backdrop-blur-sm"
-                      >
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="min-w-0">
-                            <h4 className="font-extrabold text-sm text-slate-900 truncate">{college.name}</h4>
-                            <p className="text-[10px] text-rose-400 uppercase tracking-widest font-black mt-0.5 truncate">{college.bestMatchedCourse.courseName}</p>
+                  strategicOptions.slice(0, 10).map((college, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === Math.min(strategicOptions.length, 10) - 1;
+                    const priorityText = isFirst 
+                      ? "#1 Highest Priority" 
+                      : isLast 
+                        ? `#${idx + 1} Last Priority (Safety)` 
+                        : `#${idx + 1} High Priority`;
+                    const priorityBadgeStyle = isFirst 
+                      ? "bg-rose-500 text-white shadow-md shadow-rose-500/20" 
+                      : isLast 
+                        ? "bg-emerald-600 text-white" 
+                        : "bg-slate-900 text-white";
+
+                    return (
+                      <div key={college.id} className="group">
+                        <div 
+                          className="bg-white/80 border border-white/90 rounded-2xl p-4.5 hover:border-rose-500/50 transition-all cursor-pointer shadow-sm backdrop-blur-md space-y-3"
+                          onClick={() => onSelectCollege(college)}
+                        >
+                          <div className="flex flex-wrap justify-between items-start gap-2 border-b border-slate-100/80 pb-2.5">
+                            <div className="flex items-center space-x-2.5">
+                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${priorityBadgeStyle}`}>
+                                {priorityText}
+                              </span>
+                              <div>
+                                <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-rose-600 transition-colors">{college.name}</h4>
+                                <p className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">{college.bestMatchedCourse.courseName}</p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border ${getProbabilityLabel(college.probability).bg} ${getProbabilityLabel(college.probability).border} ${getProbabilityLabel(college.probability).color}`}>
+                                {getProbabilityLabel(college.probability).label} ({college.probability}%)
+                              </span>
+                            </div>
                           </div>
-                          <div className="text-right shrink-0">
-                            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${getProbabilityLabel(college.probability).bg} ${getProbabilityLabel(college.probability).border} ${getProbabilityLabel(college.probability).color}`}>
-                              {getProbabilityLabel(college.probability).label}
+
+                          {/* Cutoff Rank & Immediate College Details */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+                            <div>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">{rankType} Cutoff Rank</span>
+                              <span className="font-black text-blue-600 text-sm">#{college.effectiveCutoff?.toLocaleString() || college.bestMatchedCourse.cutoffRank?.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">City / Campus Location</span>
+                              <span className="font-bold text-slate-800 text-xs truncate block">{college.place || "Karnataka"}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Tuition Fees</span>
+                              <span className="font-bold text-emerald-700 text-xs">₹{(college.bestMatchedCourse.fees / 1000).toFixed(0)}k / year</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Avg Placement</span>
+                              <span className="font-bold text-purple-700 text-xs">{college.bestMatchedCourse.averagePackage || college.averagePackage || "N/A"} LPA</span>
+                            </div>
+                          </div>
+
+                          {/* College Quick Action Buttons */}
+                          <div className="flex items-center justify-between pt-1 text-[11px]">
+                            <span className="text-slate-500 font-medium flex items-center">
+                              📍 {college.locationAddress || college.place}
                             </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectCollege(college);
+                              }}
+                              className="text-rose-500 hover:text-rose-600 font-extrabold text-[11px] flex items-center space-x-1"
+                            >
+                              <span>ℹ️ View Full College Details & Specs →</span>
+                            </button>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-center py-10 text-slate-500 font-bold">No strategic data available yet.</p>
                 )}
@@ -1127,15 +1182,29 @@ export function StudentDashboard({
                   {strategicOptions.length > 0 ? (
                     strategicOptions.slice(0, 10).map((college, idx) => {
                       const stars = calculateStarRating(college.probability, college.bestMatchedCourse.averagePackage);
-                      const tierLabel = idx < 3 ? "Dream Option (Priority 1-3)" : idx < 7 ? "High Match Target (Priority 4-7)" : "Safe Bet Guarantee (Priority 8+)";
+                      const isFirst = idx === 0;
+                      const isLast = idx === Math.min(strategicOptions.length, 10) - 1;
+                      const priorityTag = isFirst 
+                        ? "#1 Highest Priority" 
+                        : isLast 
+                          ? `#${idx + 1} Last Priority (Safety)` 
+                          : `#${idx + 1} Priority`;
+
+                      const tierLabel = isFirst 
+                        ? "Top Dream Choice (Priority 1)" 
+                        : idx < 3 
+                          ? "Dream Option (Priority 1-3)" 
+                          : idx < 7 
+                            ? "High Match Target (Priority 4-7)" 
+                            : "Safe Bet Guarantee (Priority 8+)";
                       const tierBadgeColor = idx < 3 ? "bg-amber-100 text-amber-800 border-amber-300" : idx < 7 ? "bg-blue-100 text-blue-800 border-blue-300" : "bg-emerald-100 text-emerald-800 border-emerald-300";
 
                       return (
                         <div key={college.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-md hover:shadow-lg transition-all space-y-3">
                           <div className="flex flex-wrap justify-between items-start gap-2 border-b border-slate-100 pb-2">
                             <div className="flex items-center space-x-2">
-                              <span className="w-7 h-7 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
-                                #{idx + 1}
+                              <span className={`px-2.5 py-1 rounded-lg text-white font-black text-xs shrink-0 ${isFirst ? 'bg-rose-500 shadow-sm shadow-rose-500/30' : isLast ? 'bg-emerald-600' : 'bg-slate-900'}`}>
+                                {priorityTag}
                               </span>
                               <div>
                                 <h4 className="font-black text-slate-900 text-sm">{college.name}</h4>
@@ -1155,31 +1224,40 @@ export function StudentDashboard({
                             </div>
                           </div>
 
-                          {/* Detailed 5-Star Breakdown Grid */}
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                          {/* Detailed Cutoff & College Specs Breakdown Grid */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-100">
                             <div>
                               <span className="text-slate-400 font-bold uppercase text-[9px] block">Admission Chance</span>
                               <span className="font-extrabold text-emerald-600">{college.probability}% Match</span>
                             </div>
                             <div>
-                              <span className="text-slate-400 font-bold uppercase text-[9px] block">Placement ROI</span>
-                              <span className="font-extrabold text-slate-800">₹{college.bestMatchedCourse.averagePackage} LPA</span>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">{rankType} Cutoff Rank</span>
+                              <span className="font-extrabold text-blue-600">#{college.effectiveCutoff?.toLocaleString() || college.bestMatchedCourse.cutoffRank?.toLocaleString()}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 font-bold uppercase text-[9px] block">Placement Packages</span>
+                              <span className="font-extrabold text-slate-800">Avg: {college.bestMatchedCourse.averagePackage} LPA</span>
                             </div>
                             <div>
                               <span className="text-slate-400 font-bold uppercase text-[9px] block">Annual Fees</span>
                               <span className="font-extrabold text-slate-800">₹{(college.bestMatchedCourse.fees / 1000).toFixed(0)}k/yr</span>
                             </div>
-                            <div>
-                              <span className="text-slate-400 font-bold uppercase text-[9px] block">{rankType} Cutoff</span>
-                              <span className="font-extrabold text-blue-600">#{college.effectiveCutoff?.toLocaleString() || college.bestMatchedCourse.cutoffRank?.toLocaleString()}</span>
-                            </div>
                           </div>
 
-                          <div className="flex items-center space-x-2 text-[11px] text-slate-600 font-medium bg-rose-50/50 p-2 rounded-xl border border-rose-100/60">
-                            <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
-                            <span>
-                              <strong>Counseling Action:</strong> Enter as Option Position #{idx + 1} in {rankType} Round {round} option entry form.
-                            </span>
+                          {/* Action & Details button right near cutoff info */}
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-50">
+                            <div className="flex items-center space-x-2 text-[11px] text-slate-600 font-medium">
+                              <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
+                              <span>
+                                <strong>Action:</strong> Enter as Option #{idx + 1} in {rankType} Round {round} option entry.
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => onSelectCollege(college)}
+                              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-extrabold rounded-lg transition-all cursor-pointer flex items-center space-x-1"
+                            >
+                              <span>ℹ️ View Full College Details & Specs</span>
+                            </button>
                           </div>
                         </div>
                       );
