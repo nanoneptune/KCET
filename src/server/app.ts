@@ -97,6 +97,9 @@ app.post("/api/auth/send-otp", async (req, res) => {
   }
 });
 
+// In-memory student profiles backup store
+const inMemoryStudents: any[] = [];
+
 // API Route: Verify OTP
 app.post("/api/auth/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
@@ -124,16 +127,162 @@ app.post("/api/auth/verify-otp", async (req, res) => {
 
     const user = {
       email: normalizedEmail,
-      name: `${data.first_name} ${data.last_name}`,
+      firstName: data.first_name || "",
+      lastName: data.last_name || "",
+      name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
       favorites: [],
+      courses: [],
+      isVerified: true,
       is_admin: false
     };
+
+    // Upsert into Supabase profiles table
+    try {
+      await supabase.from('profiles').upsert({
+        email: normalizedEmail,
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        is_verified: true,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'email' });
+    } catch (dbErr) {
+      console.warn("Supabase profile save warning:", dbErr);
+    }
+
+    // Upsert into inMemoryStudents
+    const idx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (idx >= 0) {
+      inMemoryStudents[idx] = { ...inMemoryStudents[idx], ...user };
+    } else {
+      inMemoryStudents.push(user);
+    }
 
     await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
     res.json({ success: true, user });
   } catch (error: any) {
     console.error("Verification Error:", error);
     res.status(500).json({ error: "An error occurred during verification." });
+  }
+});
+
+// API Route: Update Student Profile
+app.post("/api/auth/update-profile", async (req, res) => {
+  const { email, firstName, lastName, cetRank, dcetScore, examScore, courses, favorites } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required to update profile." });
+  }
+
+  const normalizedEmail = email.toLowerCase();
+  
+  // Exclude guest logins from profile updates
+  if (normalizedEmail.startsWith("guest_") || normalizedEmail.endsWith("@predictor.local")) {
+    return res.json({ success: true, user: req.body });
+  }
+
+  try {
+    const profileRecord = {
+      email: normalizedEmail,
+      first_name: firstName || "",
+      last_name: lastName || "",
+      cet_rank: cetRank ? Number(cetRank) : null,
+      dcet_score: dcetScore ? Number(dcetScore) : null,
+      exam_score: examScore ? Number(examScore) : null,
+      courses: courses || [],
+      favorites: favorites || [],
+      is_verified: true,
+      updated_at: new Date().toISOString()
+    };
+
+    // Save in Supabase
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert(profileRecord, { onConflict: 'email' })
+      .select()
+      .single();
+
+    const resultUser = {
+      email: normalizedEmail,
+      firstName: data?.first_name || firstName || "",
+      lastName: data?.last_name || lastName || "",
+      cetRank: data?.cet_rank ?? (cetRank ? Number(cetRank) : undefined),
+      dcetScore: data?.dcet_score ?? (dcetScore ? Number(dcetScore) : undefined),
+      examScore: data?.exam_score ?? (examScore ? Number(examScore) : undefined),
+      courses: data?.courses || courses || [],
+      favorites: data?.favorites || favorites || [],
+      isVerified: true
+    };
+
+    // Update in-memory cache as well
+    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (memIdx >= 0) {
+      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...resultUser };
+    } else {
+      inMemoryStudents.push(resultUser);
+    }
+
+    res.json({ success: true, user: resultUser });
+  } catch (err: any) {
+    console.warn("Backend profile sync notice (saved to memory cache):", err.message);
+
+    const fallbackUser = {
+      email: normalizedEmail,
+      firstName: firstName || "",
+      lastName: lastName || "",
+      cetRank: cetRank ? Number(cetRank) : undefined,
+      dcetScore: dcetScore ? Number(dcetScore) : undefined,
+      examScore: examScore ? Number(examScore) : undefined,
+      courses: courses || [],
+      favorites: favorites || [],
+      isVerified: true
+    };
+
+    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
+    if (memIdx >= 0) {
+      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...fallbackUser };
+    } else {
+      inMemoryStudents.push(fallbackUser);
+    }
+
+    res.json({ success: true, user: fallbackUser });
+  }
+});
+
+// API Route: Get Registered Students (For Admin Portal)
+app.get("/api/admin/students", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('*');
+    let loaded: any[] = [];
+    if (!error && data && data.length > 0) {
+      loaded = data.map((p: any) => ({
+        email: p.email,
+        firstName: p.first_name || p.firstName || "Student",
+        lastName: p.last_name || p.lastName || "",
+        cetRank: p.cet_rank || p.cetRank,
+        dcetScore: p.dcet_score || p.dcetScore,
+        courses: p.courses || [],
+        favorites: p.favorites || [],
+        isVerified: p.is_verified ?? true
+      }));
+    }
+
+    // Merge with inMemoryStudents
+    inMemoryStudents.forEach(m => {
+      if (!loaded.some(l => l.email.toLowerCase() === m.email.toLowerCase())) {
+        loaded.push(m);
+      }
+    });
+
+    // Filter ONLY genuine email students (exclude guest_)
+    const emailOnly = loaded.filter(s => {
+      if (!s.email) return false;
+      const e = s.email.toLowerCase();
+      return !e.startsWith("guest_") && !e.endsWith("@predictor.local");
+    });
+
+    res.json({ students: emailOnly });
+  } catch (err: any) {
+    console.error("Get admin students error:", err);
+    res.json({ students: inMemoryStudents.filter(s => s.email && !s.email.startsWith("guest_")) });
   }
 });
 
@@ -160,12 +309,144 @@ app.post("/api/ai/predict", async (req, res) => {
     Student Rank: ${cetRank}, Category: ${category}, Interested Courses: ${courses?.join(", ")}
     Provide a counseling strategy report in Markdown.`;
 
-    const response = await ai.getGenerativeModel({ model: "gemini-1.5-flash" }).generateContent(prompt);
-    res.json({ prediction: response.response.text() });
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: prompt,
+    });
+    res.json({ prediction: response.text || "" });
   } catch (error: any) {
     console.error("AI Error:", error);
     res.status(500).json({ error: "Failed to generate prediction." });
   }
+});
+
+// API Route: AI College Details & Campus Research (Powered strictly by Groq API with fallback)
+app.post("/api/ai/college-info", async (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+
+  const groqApiKey = process.env.GROQ_API_KEY || "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";
+
+  try {
+    const { name, place } = req.body || {};
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "College Name is required." });
+    }
+
+    const collegeName = name.trim();
+    const city = place ? place.trim() : "";
+
+    const prompt = `You are an expert college research assistant and campus culture specialist for Indian engineering institutions.
+Generate a detailed, fascinating, and well-structured overview for the college: "${collegeName}" ${city ? `located in ${city}` : ''}.
+
+STRICT CONTENT RULES (MUST MANDATORILY FOLLOW):
+1. DO NOT INCLUDE ANY INFORMATION ABOUT FEES, TUITION COSTS, CUTOFF RANKS, CET RANKS, DCET RANKS, OR ADMISSION MARKS. Fees and ranks are strictly forbidden from this description.
+2. Focus purely on:
+   - Campus Infrastructure & Modern Facilities (labs, library, sports grounds, hostels, Wi-Fi campus)
+   - Academic Environment & Faculty Culture
+   - Student Life, Clubs, Technical & Cultural Fests
+   - Location Highlights & Connectivity in ${city || 'the area'}
+   - Notable Achievements, Innovation Hubs & Campus Vibe
+
+REQUIRED MARKDOWN FORMAT:
+Structure the entire output using rich Markdown:
+- Main title (# Title)
+- Subheaders (## Section, ### Sub-section)
+- Bold key terms (**key text**)
+- Clean bullet lists (- point)
+- Readable paragraph spacing.
+
+Keep the text engaging, professional, and visually appealing.`;
+
+    // Strategy 1: Groq API with llama-3.3-70b-versatile
+    if (groqApiKey) {
+      const modelsToTry = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"];
+
+      for (const modelName of modelsToTry) {
+        try {
+          const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${groqApiKey}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are an expert Indian college and campus guide assistant."
+                },
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              temperature: 0.6,
+              max_tokens: 1500
+            })
+          });
+
+          if (groqResponse.ok) {
+            const groqData = await groqResponse.json();
+            const markdownText = groqData.choices?.[0]?.message?.content;
+            if (markdownText) {
+              return res.json({ details: markdownText, provider: `Groq (${modelName})` });
+            }
+          } else {
+            const errBody = await groqResponse.text();
+            console.warn(`Groq model ${modelName} returned ${groqResponse.status}:`, errBody);
+          }
+        } catch (mErr) {
+          console.warn(`Groq attempt with ${modelName} failed:`, mErr);
+        }
+      }
+    }
+
+    // Strategy 2: Gemini API Fallback
+    const ai = getAI();
+    if (ai) {
+      try {
+        const geminiRes = await ai.models.generateContent({
+          model: "gemini-3.6-flash",
+          contents: prompt,
+        });
+        if (geminiRes.text) {
+          return res.json({ details: geminiRes.text, provider: "Gemini Flash" });
+        }
+      } catch (gErr) {
+        console.warn("Gemini fallback error:", gErr);
+      }
+    }
+
+    // Strategy 3: Structured Default Campus Guide
+    const defaultGuide = `# ${collegeName} ${city ? `(${city})` : ''}
+
+## 🏫 Campus Overview & Infrastructure
+**${collegeName}** is one of the prominent educational institutions ${city ? `in ${city}` : 'in Karnataka'}. The campus features state-of-the-art academic blocks, modern digital lecture halls, advanced engineering laboratories, and high-speed Wi-Fi connectivity throughout the department premises.
+
+## 🔬 Academic Environment & Research
+- **Faculty & Mentorship:** Highly experienced academic staff and industry-oriented teaching methodologies.
+- **Innovation & Labs:** Specialized research centers, project innovation labs, and active student tech chapters.
+- **Library & Digital Resources:** Extensive physical library collections alongside online journal access for students.
+
+## 🎉 Student Life & Campus Culture
+- **Clubs & Societies:** Active IEEE student branches, coding clubs, robotics teams, and cultural forums.
+- **Annual Events:** Highlights include annual inter-college technical symposiums and vibrant cultural festivals.
+- **Hostels & Amenities:** On-campus hostel facilities for boys and girls with sports grounds and cafeteria.
+
+## 📍 Location & Connectivity
+Situated in ${city || 'a well-connected area'}, offering convenient access to public transportation, industrial hubs, and student residential areas.`;
+
+    res.json({ details: defaultGuide, provider: "Default Campus Guide" });
+  } catch (error: any) {
+    console.error("Groq AI College Info Error:", error);
+    res.status(500).json({ error: error.message || "Failed to generate AI college information using Groq." });
+  }
+});
+
+// Fallback for unmatched API routes - guarantees pure JSON responses
+app.all("/api/*", (req, res) => {
+  res.status(404).json({ error: `API route not found: ${req.method} ${req.path}` });
 });
 
 export default app;

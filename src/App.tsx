@@ -20,10 +20,12 @@ export default function App() {
 
   // Dialog details modal state
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
+  const [isVideoFullscreen, setIsVideoFullscreen] = useState(false);
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [adminPin, setAdminPin] = useState("");
   const [showPinEntry, setShowPinEntry] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Load user session and colleges list on mount
   useEffect(() => {
@@ -111,9 +113,30 @@ export default function App() {
   };
 
   // Login handler
-  const handleLoginSuccess = (user: StudentProfile) => {
+  const handleLoginSuccess = async (user: StudentProfile) => {
     setCurrentUser(user);
     localStorage.setItem("predictor_student", JSON.stringify(user));
+
+    // Sync logged in email user profile to backend & database
+    if (user.email && !user.email.startsWith("guest_") && !user.email.endsWith("@predictor.local")) {
+      try {
+        await fetch("/api/auth/update-profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            cetRank: user.cetRank,
+            dcetScore: user.dcetScore,
+            courses: user.courses || [],
+            favorites: user.favorites || []
+          })
+        });
+      } catch (err) {
+        console.warn("Server profile sync error:", err);
+      }
+    }
   };
 
   const handleSkipLogin = () => {
@@ -267,33 +290,38 @@ export default function App() {
           />
         ) : currentUser ? (
           <>
-            {/* Minimalist Floating Controls */}
-            <div className="fixed top-6 left-6 z-[100] flex items-center space-x-3 pointer-events-auto">
-              <button
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`p-3 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer ${
-                  showFavoritesOnly ? "bg-rose-500 text-white" : "glass text-rose-500"
-                }`}
-                title={showFavoritesOnly ? "Show All Colleges" : "Show Favorites"}
-              >
-                <Heart className={`h-5 w-5 ${showFavoritesOnly ? "fill-white" : ""}`} />
-              </button>
-              {showFavoritesOnly && (
-                <span className="bg-rose-500 text-white text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-left-2">
-                  Favorites Only
-                </span>
-              )}
-            </div>
+            {/* Minimalist Floating Controls - hidden when info & details modal or fullscreen video is opened */}
+            {!selectedCollege && !isVideoFullscreen && (
+              <>
+                <div className="fixed top-3 left-3 sm:top-6 sm:left-6 z-[100] flex items-center space-x-2 sm:space-x-3 pointer-events-auto">
+                  <button
+                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                    className={`p-2.5 sm:p-3 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer ${
+                      showFavoritesOnly ? "bg-rose-500 text-white" : "glass text-rose-500"
+                    }`}
+                    title={showFavoritesOnly ? "Show All Colleges" : "Show Favorites"}
+                  >
+                    <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${showFavoritesOnly ? "fill-white" : ""}`} />
+                  </button>
+                  {showFavoritesOnly && (
+                    <span className="bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-lg animate-in fade-in slide-in-from-left-2">
+                      Favorites Only
+                    </span>
+                  )}
+                </div>
 
-            <div className="fixed top-6 right-6 z-[100]">
-              <button
-                onClick={handleLogout}
-                className="p-3 glass text-slate-400 hover:text-rose-500 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer"
-                title="Exit Portal"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
+                <div className="fixed top-3 right-3 sm:top-6 sm:right-6 z-[100]">
+                  <button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    className="px-3 py-2 sm:px-4 sm:py-2.5 glass text-slate-700 hover:text-rose-500 rounded-full shadow-xl transition-all active:scale-90 cursor-pointer flex items-center space-x-1.5 sm:space-x-2 border border-white/60"
+                    title="Exit Portal"
+                  >
+                    <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500" />
+                    <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider">Exit</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* Student Matched Workspace Module */}
             <StudentDashboard
@@ -303,6 +331,7 @@ export default function App() {
               onToggleFavorite={handleToggleFavoriteFromModal}
               onSelectCollege={setSelectedCollege}
               showFavoritesOnly={showFavoritesOnly}
+              onVideoFullscreenChange={setIsVideoFullscreen}
             />
           </>
         ) : (
@@ -319,6 +348,40 @@ export default function App() {
           isFavorite={currentUser ? (currentUser.favorites || []).includes(selectedCollege.id) : false}
           onToggleFavorite={handleToggleFavoriteFromModal}
         />
+      )}
+
+      {/* Student Exit Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-rose-50 border border-rose-100 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
+              <LogOut className="h-8 w-8" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-2">Confirm Exit</h3>
+            <p className="text-sm text-slate-500 font-medium mb-8 leading-relaxed">
+              Are you sure you want to exit your student dashboard? You will be returned to the sign-in screen.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold rounded-2xl transition-all cursor-pointer text-xs uppercase tracking-wider active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  handleLogout();
+                }}
+                className="py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-2xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer text-xs uppercase tracking-wider active:scale-95"
+              >
+                Yes, Exit
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
