@@ -1216,6 +1216,15 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
                               onVideoFullscreenChange?.(fs);
                             }}
                           />
+                        ) : college.videoUrl ? (
+                          <AutoPlayVideo 
+                            url={college.videoUrl} 
+                            title={college.name} 
+                            onFullscreenChange={(fs) => {
+                              setIsVideoFullscreen(fs);
+                              onVideoFullscreenChange?.(fs);
+                            }}
+                          />
                         ) : (
                           <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-rose-600 flex flex-col items-center justify-center text-white/50">
                             <School className="w-16 h-16 mb-2 opacity-50" />
@@ -1274,7 +1283,6 @@ Provide a comprehensive, encouraging Markdown strategy report covering:
                           </button>
                         </div>
                       )}
-
                       {/* Card Content Details - Fits card height without scroll */}
                       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between overflow-hidden">
                         <p className="text-xs font-semibold text-slate-700 leading-snug my-0.5 line-clamp-2">

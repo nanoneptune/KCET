@@ -205,7 +205,6 @@ export const AutoPlayVideo: React.FC<AutoPlayVideoProps> = ({
   const toggleVideoZoom = () => {
     setVideoZoom(prev => (prev > 1 ? 1 : 2.5));
   };
-
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const fullscreenIframeRef = useRef<HTMLIFrameElement>(null);
 
