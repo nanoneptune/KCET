@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { School, Search, Trash2, Edit3, Loader2, Save, MapPin, Phone, Globe, PlusCircle, Users, LayoutDashboard, Upload, Image as ImageIcon, Video, CheckCircle2, AlertCircle, Youtube, Sparkles, FileText, Wand2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { College, StudentProfile, CollegeCourse } from "../types";
-import { supabase } from "../lib/supabase";
 import AutoPlayVideo, { extractYouTubeId } from "./AutoPlayVideo";
 
 interface AdminPortalProps {
@@ -256,31 +255,7 @@ Situated in ${place.trim() || 'Karnataka'}, providing easy access via public tra
         console.warn("Backend admin students fetch warning:", e);
       }
 
-      // 2. Try fetching from Supabase profiles as backup/complement
-      try {
-        const { data, error } = await supabase.from('profiles').select('*');
-        if (!error && data && data.length > 0) {
-          data.forEach((p: any) => {
-            if (p.email && !loaded.some(l => l.email.toLowerCase() === p.email.toLowerCase())) {
-              loaded.push({
-                email: p.email || "",
-                firstName: p.first_name || p.firstName || "Student",
-                lastName: p.last_name || p.lastName || "",
-                cetRank: p.cet_rank || p.cetRank,
-                dcetScore: p.dcet_score || p.dcetScore,
-                examScore: p.exam_score || p.examScore,
-                courses: p.courses || [],
-                favorites: p.favorites || [],
-                isVerified: p.is_verified ?? p.isVerified ?? true
-              });
-            }
-          });
-        }
-      } catch (e) {
-        console.warn("Supabase profiles fetch warning:", e);
-      }
-
-      // 3. Try recovering local session student if registered by email
+      // 2. Try recovering local session student if registered by email
       const localSaved = localStorage.getItem("predictor_student");
       if (localSaved) {
         try {

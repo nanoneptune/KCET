@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "./lib/supabase";
 import LoginView from "./components/LoginView";
 import StudentDashboard from "./components/StudentDashboard";
 import AdminPortal from "./components/AdminPortal";
@@ -57,16 +56,13 @@ export default function App() {
   const fetchColleges = async () => {
     setLoadingColleges(true);
     try {
-      const { data, error } = await supabase
-        .from('colleges')
-        .select('*');
-      
-      if (error) throw error;
-      setColleges(data || []);
+      const res = await fetch("/api/colleges");
+      if (!res.ok) throw new Error("Failed to fetch colleges");
+      const data = await res.json();
+      setColleges(data.colleges || []);
       setIsFallbackMode(false);
     } catch (err: any) {
-      console.error("Supabase error fetching colleges:", err);
-      // Fallback to local data if needed, but the user requested fresh start
+      console.error("Error fetching colleges from database:", err);
       setColleges([]);
     } finally {
       setLoadingColleges(false);
@@ -179,11 +175,13 @@ export default function App() {
   // Admin Actions: Save/Update College record
   const handleAddCollege = async (college: College, isEditing?: boolean) => {
     try {
-      const { error } = await supabase
-        .from('colleges')
-        .upsert(college);
-      
-      if (error) throw error;
+      const res = await fetch("/api/colleges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(college)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save college");
       await fetchColleges();
     } catch (err: any) {
       throw new Error(err.message);
@@ -193,12 +191,11 @@ export default function App() {
   // Admin Actions: Delete College record
   const handleDeleteCollege = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('colleges')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      const res = await fetch(`/api/colleges/${encodeURIComponent(id)}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete college");
       await fetchColleges();
     } catch (err: any) {
       throw new Error(err.message);

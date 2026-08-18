@@ -1,4 +1,4 @@
 import { College } from "../types";
 
-// Fresh start: Exporting an empty array. Data will be fetched from Supabase.
+// Exporting initial empty array. Data is loaded dynamically from Turso Database.
 export const colleges: College[] = [];

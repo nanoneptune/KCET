@@ -2,17 +2,15 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import { createClient } from "@supabase/supabase-js";
+import { db, initDb } from "./db";
 
 dotenv.config();
 
-// Initialize Supabase Admin Client (Server-side)
-const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Ensure Turso DB tables exist
+initDb();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 // Lazy-initialized Email Transporter
 let transporter: any = null;
@@ -34,6 +32,205 @@ function getTransporter() {
   return transporter;
 }
 
+// Helper function to safely parse JSON strings from SQLite TEXT columns
+function parseJson(val: any, fallback: any = []) {
+  if (!val) return fallback;
+  if (typeof val === 'object') return val;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return fallback;
+  }
+}
+
+// ==================== COLLEGES API ROUTES (TURSO DB) ====================
+
+// GET /api/colleges - Fetch all colleges
+app.get("/api/colleges", async (req, res) => {
+  try {
+    await initDb();
+    const result = await db.execute("SELECT * FROM colleges ORDER FROM created_at DESC, name ASC");
+    const colleges = result.rows.map((row: any) => ({
+      id: String(row.id),
+      name: String(row.name || ""),
+      place: String(row.place || ""),
+      locationAddress: String(row.location_address || ""),
+      details: String(row.details || ""),
+      contactNumber: String(row.contact_number || ""),
+      website: String(row.website || ""),
+      videoUrl: row.video_url ? String(row.video_url) : undefined,
+      images: parseJson(row.images, []),
+      courses: parseJson(row.courses, []),
+      type: row.type ? String(row.type) : undefined,
+      established: row.established ? Number(row.established) : undefined,
+      rating: row.rating ? Number(row.rating) : undefined
+    }));
+    res.json({ success: true, colleges });
+  } catch (err: any) {
+    // If table ordered clause syntax issue or table empty, try simple select
+    try {
+      const result = await db.execute("SELECT * FROM colleges");
+      const colleges = result.rows.map((row: any) => ({
+        id: String(row.id),
+        name: String(row.name || ""),
+        place: String(row.place || ""),
+        locationAddress: String(row.location_address || ""),
+        details: String(row.details || ""),
+        contactNumber: String(row.contact_number || ""),
+        website: String(row.website || ""),
+        videoUrl: row.video_url ? String(row.video_url) : undefined,
+        images: parseJson(row.images, []),
+        courses: parseJson(row.courses, []),
+        type: row.type ? String(row.type) : undefined,
+        established: row.established ? Number(row.established) : undefined,
+        rating: row.rating ? Number(row.rating) : undefined
+      }));
+      res.json({ success: true, colleges });
+    } catch (e: any) {
+      console.error("Turso DB Get Colleges Error:", e);
+      res.json({ success: true, colleges: [] });
+    }
+  }
+});
+
+// POST /api/colleges - Save or update a single college
+app.post("/api/colleges", async (req, res) => {
+  const college = req.body;
+  if (!college || !college.id || !college.name) {
+    return res.status(400).json({ error: "College ID and Name are required." });
+  }
+
+  try {
+    await initDb();
+    const imagesJson = JSON.stringify(college.images || []);
+    const coursesJson = JSON.stringify(college.courses || []);
+    const createdAt = new Date().toISOString();
+
+    await db.execute({
+      sql: `
+        INSERT INTO colleges (
+          id, name, place, location_address, details, contact_number, website, video_url, images, courses, type, established, rating, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          name = excluded.name,
+          place = excluded.place,
+          location_address = excluded.location_address,
+          details = excluded.details,
+          contact_number = excluded.contact_number,
+          website = excluded.website,
+          video_url = excluded.video_url,
+          images = excluded.images,
+          courses = excluded.courses,
+          type = excluded.type,
+          established = excluded.established,
+          rating = excluded.rating;
+      `,
+      args: [
+        college.id,
+        college.name || "",
+        college.place || "",
+        college.locationAddress || "",
+        college.details || "",
+        college.contactNumber || "",
+        college.website || "",
+        college.videoUrl || null,
+        imagesJson,
+        coursesJson,
+        college.type || null,
+        college.established ? Number(college.established) : null,
+        college.rating ? Number(college.rating) : null,
+        createdAt
+      ]
+    });
+
+    res.json({ success: true, college });
+  } catch (err: any) {
+    console.error("Turso DB Save College Error:", err);
+    res.status(500).json({ error: err.message || "Failed to save college to Turso database." });
+  }
+});
+
+// DELETE /api/colleges/:id - Delete a college
+app.delete("/api/colleges/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: "College ID is required." });
+
+  try {
+    await initDb();
+    await db.execute({
+      sql: "DELETE FROM colleges WHERE id = ?",
+      args: [id]
+    });
+    res.json({ success: true, id });
+  } catch (err: any) {
+    console.error("Turso DB Delete College Error:", err);
+    res.status(500).json({ error: err.message || "Failed to delete college from Turso database." });
+  }
+});
+
+// POST /api/colleges/import - Bulk import colleges
+app.post("/api/colleges/import", async (req, res) => {
+  const { colleges } = req.body;
+  if (!Array.isArray(colleges)) {
+    return res.status(400).json({ error: "Invalid colleges array." });
+  }
+
+  try {
+    await initDb();
+    const createdAt = new Date().toISOString();
+    
+    for (const college of colleges) {
+      if (!college.id || !college.name) continue;
+      const imagesJson = JSON.stringify(college.images || []);
+      const coursesJson = JSON.stringify(college.courses || []);
+
+      await db.execute({
+        sql: `
+          INSERT INTO colleges (
+            id, name, place, location_address, details, contact_number, website, video_url, images, courses, type, established, rating, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            place = excluded.place,
+            location_address = excluded.location_address,
+            details = excluded.details,
+            contact_number = excluded.contact_number,
+            website = excluded.website,
+            video_url = excluded.video_url,
+            images = excluded.images,
+            courses = excluded.courses,
+            type = excluded.type,
+            established = excluded.established,
+            rating = excluded.rating;
+        `,
+        args: [
+          college.id,
+          college.name || "",
+          college.place || "",
+          college.locationAddress || "",
+          college.details || "",
+          college.contactNumber || "",
+          college.website || "",
+          college.videoUrl || null,
+          imagesJson,
+          coursesJson,
+          college.type || null,
+          college.established ? Number(college.established) : null,
+          college.rating ? Number(college.rating) : null,
+          createdAt
+        ]
+      });
+    }
+
+    res.json({ success: true, count: colleges.length });
+  } catch (err: any) {
+    console.error("Turso DB Import Colleges Error:", err);
+    res.status(500).json({ error: err.message || "Failed to import colleges." });
+  }
+});
+
+// ==================== AUTH & PROFILES API ROUTES (TURSO DB) ====================
+
 // API Route: Send OTP
 app.post("/api/auth/send-otp", async (req, res) => {
   const { email, firstName, lastName } = req.body;
@@ -42,28 +239,24 @@ app.post("/api/auth/send-otp", async (req, res) => {
     return res.status(400).json({ error: "Email and name details are required." });
   }
 
-  if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
-    return res.status(500).json({ error: "Server Database configuration missing." });
-  }
-
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  const normalizedEmail = email.toLowerCase();
 
   try {
-    const { error: upsertError } = await supabase
-      .from('auth_otps')
-      .upsert({ 
-        email: email.toLowerCase(), 
-        otp, 
-        expires_at: expiresAt,
-        first_name: firstName,
-        last_name: lastName
-      }, { onConflict: 'email' });
-
-    if (upsertError) {
-      console.error("Supabase OTP Error:", upsertError);
-      throw new Error(`Database error: ${upsertError.message}. Make sure 'auth_otps' table exists.`);
-    }
+    await initDb();
+    await db.execute({
+      sql: `
+        INSERT INTO auth_otps (email, otp, expires_at, first_name, last_name)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(email) DO UPDATE SET
+          otp = excluded.otp,
+          expires_at = excluded.expires_at,
+          first_name = excluded.first_name,
+          last_name = excluded.last_name;
+      `,
+      args: [normalizedEmail, otp, expiresAt, firstName, lastName]
+    });
 
     if (process.env.SMTP_HOST && process.env.SMTP_USER) {
       const mailer = getTransporter();
@@ -97,67 +290,76 @@ app.post("/api/auth/send-otp", async (req, res) => {
   }
 });
 
-// In-memory student profiles backup store
-const inMemoryStudents: any[] = [];
-
 // API Route: Verify OTP
 app.post("/api/auth/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required." });
+  }
   const normalizedEmail = email.toLowerCase();
 
   try {
-    const { data, error } = await supabase
-      .from('auth_otps')
-      .select('*')
-      .eq('email', normalizedEmail)
-      .single();
+    await initDb();
+    const result = await db.execute({
+      sql: "SELECT * FROM auth_otps WHERE email = ?",
+      args: [normalizedEmail]
+    });
 
-    if (error || !data) {
+    const record = result.rows[0];
+
+    if (!record) {
       return res.status(400).json({ error: "No verification request found for this email." });
     }
 
-    if (new Date() > new Date(data.expires_at)) {
-      await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
+    if (new Date() > new Date(String(record.expires_at))) {
+      await db.execute({
+        sql: "DELETE FROM auth_otps WHERE email = ?",
+        args: [normalizedEmail]
+      });
       return res.status(400).json({ error: "Verification code has expired." });
     }
 
-    if (data.otp !== otp) {
+    if (String(record.otp) !== String(otp)) {
       return res.status(400).json({ error: "Invalid verification code." });
     }
 
+    const firstName = String(record.first_name || "");
+    const lastName = String(record.last_name || "");
+
     const user = {
       email: normalizedEmail,
-      firstName: data.first_name || "",
-      lastName: data.last_name || "",
-      name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+      firstName,
+      lastName,
+      name: `${firstName} ${lastName}`.trim(),
       favorites: [],
       courses: [],
-      isVerified: true,
-      is_admin: false
+      isVerified: true
     };
 
-    // Upsert into Supabase profiles table
+    // Upsert into profiles table
     try {
-      await supabase.from('profiles').upsert({
-        email: normalizedEmail,
-        first_name: data.first_name || "",
-        last_name: data.last_name || "",
-        is_verified: true,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'email' });
+      await db.execute({
+        sql: `
+          INSERT INTO profiles (email, first_name, last_name, is_verified, updated_at)
+          VALUES (?, ?, ?, 1, ?)
+          ON CONFLICT(email) DO UPDATE SET
+            first_name = excluded.first_name,
+            last_name = excluded.last_name,
+            is_verified = 1,
+            updated_at = excluded.updated_at;
+        `,
+        args: [normalizedEmail, firstName, lastName, new Date().toISOString()]
+      });
     } catch (dbErr) {
-      console.warn("Supabase profile save warning:", dbErr);
+      console.warn("Turso profile save warning:", dbErr);
     }
 
-    // Upsert into inMemoryStudents
-    const idx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
-    if (idx >= 0) {
-      inMemoryStudents[idx] = { ...inMemoryStudents[idx], ...user };
-    } else {
-      inMemoryStudents.push(user);
-    }
+    // Clean up OTP record
+    await db.execute({
+      sql: "DELETE FROM auth_otps WHERE email = ?",
+      args: [normalizedEmail]
+    });
 
-    await supabase.from('auth_otps').delete().eq('email', normalizedEmail);
     res.json({ success: true, user });
   } catch (error: any) {
     console.error("Verification Error:", error);
@@ -174,57 +376,47 @@ app.post("/api/auth/update-profile", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase();
   
-  // Exclude guest logins from profile updates
+  // Exclude guest logins from DB profile updates
   if (normalizedEmail.startsWith("guest_") || normalizedEmail.endsWith("@predictor.local")) {
     return res.json({ success: true, user: req.body });
   }
 
   try {
-    const profileRecord = {
-      email: normalizedEmail,
-      first_name: firstName || "",
-      last_name: lastName || "",
-      cet_rank: cetRank ? Number(cetRank) : null,
-      dcet_score: dcetScore ? Number(dcetScore) : null,
-      exam_score: examScore ? Number(examScore) : null,
-      courses: courses || [],
-      favorites: favorites || [],
-      is_verified: true,
-      updated_at: new Date().toISOString()
-    };
+    await initDb();
+    const coursesJson = JSON.stringify(courses || []);
+    const favoritesJson = JSON.stringify(favorites || []);
+    const updatedAt = new Date().toISOString();
 
-    // Save in Supabase
-    const { data, error } = await supabase
-      .from('profiles')
-      .upsert(profileRecord, { onConflict: 'email' })
-      .select()
-      .single();
+    await db.execute({
+      sql: `
+        INSERT INTO profiles (
+          email, first_name, last_name, cet_rank, dcet_score, exam_score, courses, favorites, is_verified, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+        ON CONFLICT(email) DO UPDATE SET
+          first_name = excluded.first_name,
+          last_name = excluded.last_name,
+          cet_rank = excluded.cet_rank,
+          dcet_score = excluded.dcet_score,
+          exam_score = excluded.exam_score,
+          courses = excluded.courses,
+          favorites = excluded.favorites,
+          is_verified = 1,
+          updated_at = excluded.updated_at;
+      `,
+      args: [
+        normalizedEmail,
+        firstName || "",
+        lastName || "",
+        cetRank ? Number(cetRank) : null,
+        dcetScore ? Number(dcetScore) : null,
+        examScore ? Number(examScore) : null,
+        coursesJson,
+        favoritesJson,
+        updatedAt
+      ]
+    });
 
     const resultUser = {
-      email: normalizedEmail,
-      firstName: data?.first_name || firstName || "",
-      lastName: data?.last_name || lastName || "",
-      cetRank: data?.cet_rank ?? (cetRank ? Number(cetRank) : undefined),
-      dcetScore: data?.dcet_score ?? (dcetScore ? Number(dcetScore) : undefined),
-      examScore: data?.exam_score ?? (examScore ? Number(examScore) : undefined),
-      courses: data?.courses || courses || [],
-      favorites: data?.favorites || favorites || [],
-      isVerified: true
-    };
-
-    // Update in-memory cache as well
-    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
-    if (memIdx >= 0) {
-      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...resultUser };
-    } else {
-      inMemoryStudents.push(resultUser);
-    }
-
-    res.json({ success: true, user: resultUser });
-  } catch (err: any) {
-    console.warn("Backend profile sync notice (saved to memory cache):", err.message);
-
-    const fallbackUser = {
       email: normalizedEmail,
       firstName: firstName || "",
       lastName: lastName || "",
@@ -236,53 +428,40 @@ app.post("/api/auth/update-profile", async (req, res) => {
       isVerified: true
     };
 
-    const memIdx = inMemoryStudents.findIndex(s => s.email.toLowerCase() === normalizedEmail);
-    if (memIdx >= 0) {
-      inMemoryStudents[memIdx] = { ...inMemoryStudents[memIdx], ...fallbackUser };
-    } else {
-      inMemoryStudents.push(fallbackUser);
-    }
-
-    res.json({ success: true, user: fallbackUser });
+    res.json({ success: true, user: resultUser });
+  } catch (err: any) {
+    console.error("Profile sync error:", err);
+    res.status(500).json({ error: err.message || "Failed to update profile." });
   }
 });
 
 // API Route: Get Registered Students (For Admin Portal)
 app.get("/api/admin/students", async (req, res) => {
   try {
-    const { data, error } = await supabase.from('profiles').select('*');
-    let loaded: any[] = [];
-    if (!error && data && data.length > 0) {
-      loaded = data.map((p: any) => ({
-        email: p.email,
-        firstName: p.first_name || p.firstName || "Student",
-        lastName: p.last_name || p.lastName || "",
-        cetRank: p.cet_rank || p.cetRank,
-        dcetScore: p.dcet_score || p.dcetScore,
-        courses: p.courses || [],
-        favorites: p.favorites || [],
-        isVerified: p.is_verified ?? true
-      }));
-    }
+    await initDb();
+    const result = await db.execute("SELECT * FROM profiles");
+    const students = result.rows
+      .map((p: any) => ({
+        email: String(p.email || ""),
+        firstName: String(p.first_name || p.firstName || "Student"),
+        lastName: String(p.last_name || p.lastName || ""),
+        cetRank: p.cet_rank ? Number(p.cet_rank) : undefined,
+        dcetScore: p.dcet_score ? Number(p.dcet_score) : undefined,
+        examScore: p.exam_score ? Number(p.exam_score) : undefined,
+        courses: parseJson(p.courses, []),
+        favorites: parseJson(p.favorites, []),
+        isVerified: p.is_verified === 1 || p.is_verified === true
+      }))
+      .filter((s: any) => {
+        if (!s.email) return false;
+        const e = s.email.toLowerCase();
+        return !e.startsWith("guest_") && !e.endsWith("@predictor.local");
+      });
 
-    // Merge with inMemoryStudents
-    inMemoryStudents.forEach(m => {
-      if (!loaded.some(l => l.email.toLowerCase() === m.email.toLowerCase())) {
-        loaded.push(m);
-      }
-    });
-
-    // Filter ONLY genuine email students (exclude guest_)
-    const emailOnly = loaded.filter(s => {
-      if (!s.email) return false;
-      const e = s.email.toLowerCase();
-      return !e.startsWith("guest_") && !e.endsWith("@predictor.local");
-    });
-
-    res.json({ students: emailOnly });
+    res.json({ students });
   } catch (err: any) {
     console.error("Get admin students error:", err);
-    res.json({ students: inMemoryStudents.filter(s => s.email && !s.email.startsWith("guest_")) });
+    res.json({ students: [] });
   }
 });
 
