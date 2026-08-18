@@ -2,7 +2,7 @@ import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import { db, initDb } from "./db";
+import { db, initDb } from "./db.js";
 
 dotenv.config();
 
